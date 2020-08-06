@@ -261,7 +261,7 @@ void Simulation::write_output(const char *output_File)
 		output_Stream << cases_F_U16_t[i] << "\t";
 		output_Stream << cases_preg_t[i] << "\t";
 
-		
+
 		// Write A_par_mean_t and A_clin_mean_t
 		output_Stream << A_par_mean_t[i] << "\t";
 		output_Stream << A_clin_mean_t[i] << "\t";
@@ -274,4 +274,83 @@ void Simulation::write_output(const char *output_File)
 
 	cout << "Output successfully written to file......" << endl;
 	cout << endl;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+//                                                                          //
+//  7.2.2. Simulate the model and store the output in SIM                   //
+//                                                                          //
+//////////////////////////////////////////////////////////////////////////////
+
+void Simulation::runTrial(Params& theta, Population& POP, Intervention& INTVEN, Trial& TRIAL)
+{
+
+	for (int i = 0; i < N_time; i++)
+	{
+		if (t_vec[i] / 365.0 - floor(t_vec[i] / 365.0) < 0.5*t_step / 365.0)
+		{
+			cout << "time = " << t_vec[i] / 365.0 << "\t" << 100.0*(t_vec[i] - t_vec[0]) / (double(t_step*N_time)) << "% complete" << endl;
+		}
+
+		POP.human_step(theta);
+
+		TRIAL.update(theta, POP, t_vec[i]);
+
+		mosquito_step(t_vec[i], theta, POP);
+
+		INTVEN.distribute(t_vec[i], theta, POP);
+
+		POP.summary();
+
+		//////////////////////////////////////
+		// Fill out Simulation object
+
+		for (int k = 0; k < N_H_comp; k++)
+		{
+			yH_t[i][k] = POP.yH[k];
+		}
+
+		for (int k = 0; k < N_M_comp; k++)
+		{
+			for (int v = 0; v < N_mosq; v++)
+			{
+				yM_t[i][v][k] = POP.yM[v][k];
+			}
+		}
+
+		for (int k = 0; k < 15; k++)
+		{
+			prev_all[i][k] = POP.prev_all[k];
+			prev_U5[i][k] = POP.prev_U5[k];
+			prev_U10[i][k] = POP.prev_U10[k];
+		}
+
+
+		LLIN_cov_t[i] = POP.LLIN_cov_t;
+		IRS_cov_t[i]  = POP.IRS_cov_t;
+		IVM_cov_t[i]  = POP.IVM_cov_t;
+		CQ_treat_t[i] = POP.CQ_treat_t;
+		PQ_treat_t[i] = POP.PQ_treat_t;
+		TQ_treat_t[i] = POP.TQ_treat_t;
+		pregnant_t[i] = POP.pregnant_t;
+
+		PQ_overtreat_t[i]    = POP.PQ_overtreat_t;
+		PQ_overtreat_9m_t[i] = POP.PQ_overtreat_9m_t;
+
+		TQ_overtreat_t[i]    = POP.TQ_overtreat_t;
+		TQ_overtreat_9m_t[i] = POP.TQ_overtreat_9m_t;
+
+		EIR_dom_t[i] = EIR_dom_t[i] + POP.aa_VC[0] * POP.yM[0][5];
+		EIR_occ_t[i] = EIR_occ_t[i] + POP.aa_VC[1] * POP.yM[1][5];
+
+		cases_M_O16_t[i] = POP.cases_M_O16_t;
+		cases_M_U16_t[i] = POP.cases_M_U16_t;
+		cases_F_O16_t[i] = POP.cases_F_O16_t;
+		cases_F_U16_t[i] = POP.cases_F_U16_t;
+		cases_preg_t[i]  = POP.cases_preg_t;
+
+		A_par_mean_t[i] = POP.A_par_mean_t;
+		A_clin_mean_t[i] = POP.A_clin_mean_t;
+
+	}
 }

@@ -19,6 +19,7 @@
 #define PVIVAX_MODEL_PARAMS
 
 #include <vector>
+#include <string>
 
 using namespace std;
 
@@ -88,7 +89,7 @@ struct Params
 	/////////////////////////////////
 	// Human demography
 
-	double mu_H;                   // human death rate 
+	double mu_H;                   // human death rate
 	double age_mean;               // mean age of human population
 	double age_max;                // maximum age in human population
 	double het_max;                // maximum heterogeneity
@@ -96,14 +97,14 @@ struct Params
 	double P_occup;                // Proportion of males with occupational exposure
 	double risk_occup;             // Extra risk from occupational mosquitoes
 
-	double occup_age_low;          // lowest age of occupational exposure   
+	double occup_age_low;          // lowest age of occupational exposure
 	double occup_age_high;         // highest age of occupational exposure
 
 	double P_preg;                 // Proportion pregnant females within age range
 	double preg_rate;              // Rate at which age eligible women become pregnant
 
 	double preg_age_low;           // lowest age of pregnancy
-	double preg_age_high;          // highest age of pregnancy  
+	double preg_age_high;          // highest age of pregnancy
 
 
 	////////////////////////////////////////////////////////
@@ -133,7 +134,7 @@ struct Params
 
 	double r_LM;                   // rate of recovery from LM detectable infection
 	double r_D;                    // rate of recovery from symptomatic disease
-	double r_T;                    // rate of progression through treatment 
+	double r_T;                    // rate of progression through treatment
 	double r_P;                    // rate of loss of prophylaxis
 
 	double d_PCR_min;              // minimum duration of PCR-detectable infection - full immunity
@@ -150,8 +151,8 @@ struct Params
 	double u_par;                  // scale paramter for acquisition of blood-stage immunity
 	double r_par;                  // rate of decay of blood-stage immunity
 
-	double phi_LM_max;             // probability of LM-detectable infection with no immunity 
-	double phi_LM_min;             // probability of LM-detectable infection with full immunity 
+	double phi_LM_max;             // probability of LM-detectable infection with no immunity
+	double phi_LM_min;             // probability of LM-detectable infection with full immunity
 	double A_LM_50pc;              // blood-stage immunity scale parameter
 	double K_LM;                   // blood-stage immunity shape parameter
 
@@ -164,7 +165,7 @@ struct Params
 	double u_clin;                 // scale paramter for acquisition of blood-stage immunity
 	double r_clin;                 // rate of decay of clinical immunity
 
-	double phi_D_max;              // probability of clinical episode with no immunity 
+	double phi_D_max;              // probability of clinical episode with no immunity
 	double phi_D_min;              // probability of clinical episode with full immunity
 	double A_D_50pc;               // clinical immunity scale parameter
 	double K_D;                    // clinical immunity shape parameter
@@ -189,7 +190,7 @@ struct Params
 	/////////////////////////////////
 	// Baseline case management parameters
 
-	int CM_regimen;             // treatment regimen: 0 = blood-stage (baseline default); 1 = primaquine; 2 = tafenoquine 
+	int CM_regimen;             // treatment regimen: 0 = blood-stage (baseline default); 1 = primaquine; 2 = tafenoquine
 	double CM_cover;            // proportion of symptomatic cases treated
 
 	double CM_CQ_eff;	        // chloroquine efficacy (on its own)
@@ -200,6 +201,10 @@ struct Params
 	double CM_PQ_proph;		    // duration of primaquine_prophylaxis
 	double CM_PQ_adhere;		// primaquine adherence
 	double CM_PQ_lowage;	    // minimum ag for primaquine
+	double CM_PQ_prop_stratum_1;			// proportion of individuals that belong to PQ efficacy statum 1
+	double CM_PQ_prop_stratum_2;			// proportion of individuals that belong to PQ efficacy statum 2
+	double CM_PQ_eff_stratum_1;		// efficacy of first-line primaquine treatment for stratum 1
+	double CM_PQ_eff_stratum_2;		// efficacy of first-line primaquine treatment for stratum 2
 	int CM_PQ_G6PD_risk;	    // G6PD risk for primaquine
 	int CM_PQ_CYP2D6_risk;	    // CYP2D6 risk for primaquine
 	int	CM_PQ_preg_risk;	    // G6PD risk for pregnancy
@@ -215,7 +220,7 @@ struct Params
 	int	CM_G6PD_test; 	        // G6PD testing
 
 
-	double CM_CQ_coveff;        // product of coverage and efficacy for chloroquine 
+	double CM_CQ_coveff;        // product of coverage and efficacy for chloroquine
 	double CM_PQ_coveff;        // product of coverage and efficacy for primaquine
 	double CM_TQ_coveff;        // product of coverage and efficacy for tafenoquine
 
@@ -225,8 +230,8 @@ struct Params
 
 	double G6PD_prev;              // Prevalence of G6PD deficiency
 	double mu_G6PD_nor;            // Mean G6PD activity in normals
-	double sig_G6PD_nor;           // Standard deviation in G6PD activity in normals 
-	double mu_G6PD_het;            // Mean G6PD activity in heterozygous deficients 
+	double sig_G6PD_nor;           // Standard deviation in G6PD activity in normals
+	double mu_G6PD_het;            // Mean G6PD activity in heterozygous deficients
 	double sig_G6PD_het;           // Standard deviation in G6PD activity in heterozygous deficients
 	double mu_G6PD_def;            // Mean G6PD activity in homozygous deficients
 	double sig_G6PD_def;           // Standard deviation in G6PD activity in homozygous deficients
@@ -258,7 +263,7 @@ struct Params
 	// Entomological paramters
 
 	double mm_0[N_mosq];                   // number of mosquitoes per human (An. farauti)
-	double aa[N_mosq];                     // mosquito biting rate (in the absence of vector control)        
+	double aa[N_mosq];                     // mosquito biting rate (in the absence of vector control)
 	double mu_M[N_mosq];                   // mosquito death rate
 	double tau_M[N_mosq];                  // duration of sporogony
 
@@ -271,7 +276,7 @@ struct Params
 	////////////////////////////////
 	// Seasonality paramters
 
-	double dry_seas[N_mosq];        // Proportion of dry season transmission compared to mean 
+	double dry_seas[N_mosq];        // Proportion of dry season transmission compared to mean
 	double kappa_seas[N_mosq];      // Shape parameter for seasonality
 	double t_peak_seas[N_mosq];     // Offset for seasonal transmission
 	double denom_seas[N_mosq];      // Denominator for seasonality
@@ -310,7 +315,7 @@ struct Params
 
 	double CM1_CQ_eff;               // chloroquine efficacy (on its own)
 	double CM1_CQ_eff_wPQ;           // chloroquine efficacy (co-administered with PQ)
-	double CM1_CQ_proph;             // duration of prophylaxis of chloroquine 
+	double CM1_CQ_proph;             // duration of prophylaxis of chloroquine
 	double CM1_PQ_eff;               // primaquine efficacy
 	double CM1_PQ_proph;             // duration of primaquine prophylaxis (number of days + 1)
 	double CM1_PQ_adhere;            // adherence to full primaquine regimen
@@ -346,7 +351,7 @@ struct Params
 
 	////////////////////////////////
 	// Intervention 5 parameters
-	// MDA chloroquine parameters 
+	// MDA chloroquine parameters
 
 	double MDA0_cover;            // Coverage of chloroquine
 	double MDA0_CQ_eff;           // Efficacy of chloroquine
@@ -355,9 +360,9 @@ struct Params
 
 	////////////////////////////////
 	// Intervention 6 parameters
-	// MDA PQ parameters 
+	// MDA PQ parameters
 
-	double MDA1_cover;            // Coverage 
+	double MDA1_cover;            // Coverage
 	double MDA1_CQ_eff;           // Efficacy of chloroquine (on its own)
 	double MDA1_CQ_eff_wPQ;       // Efficacy of chloroquine (co-administered with PQ)
 	double MDA1_CQ_proph;         // Duration of chloroquine prophylaxis
@@ -373,7 +378,7 @@ struct Params
 
 	////////////////////////////////
 	// Intervention 7 parameters
-	// MDA TQ parameters 
+	// MDA TQ parameters
 
 	double MDA2_cover;            // Coverage
 	double MDA2_CQ_eff;           // Efficacy of chloroquine (on its own)
@@ -398,7 +403,7 @@ struct Params
 
 	///////////////////////////////
 	// Intervention 8 parameters
-	// MSAT with chloroquine parameters 
+	// MSAT with chloroquine parameters
 
 	double MSAT0_cover;           // Coverage
 	double MSAT0_RDT_PCR;         // What diagnostic tool : 1 for RDT(= LM); 2 for PCR
@@ -409,7 +414,7 @@ struct Params
 
 	///////////////////////////////
 	// Intervention 9 parameters
-	// MSAT with PQ parameters 
+	// MSAT with PQ parameters
 
 	double MSAT1_cover;            // Coverage
 	double MSAT1_RDT_PCR;          // What diagnostic tool : 1 for RDT(= LM); 2 for PCR
@@ -429,7 +434,7 @@ struct Params
 
 	///////////////////////////////
 	// Intervention 10 parameters
-	// MSAT with PQ parameters 
+	// MSAT with PQ parameters
 
 	double MSAT2_cover;            // Coverage
 	double MSAT2_RDT_PCR;          // What diagnostic tool : 1 for RDT(= LM); 2 for PCR
@@ -456,7 +461,7 @@ struct Params
 
 	///////////////////////////////
 	// Intervention 11 parameters
-	// STAT with PQ parameters 
+	// STAT with PQ parameters
 
 	double STAT1_cover;            // Coverage
 	double STAT1_sens;             // Sensitivity of diagnostic tool
@@ -477,7 +482,7 @@ struct Params
 
 	///////////////////////////////
 	// Intervention 12 parameters
-	// STAT with TQ parameters 
+	// STAT with TQ parameters
 
 	double STAT2_cover;            // Coverage
 	double STAT2_sens;             // Sensitivity of diagnostic tool
@@ -539,7 +544,7 @@ struct Params
 
 	/////////////////////////////////////////////////////////
 	// Intervention 13 parameters
-	// Ivermectin parameters 
+	// Ivermectin parameters
 
 	double d_IVM_0;          // Probability mosquito dies during feeding attempt
 	double IVM_half_life;    // Half-life of loss of LLINs
@@ -552,7 +557,7 @@ struct Params
 
 	double A_par_decay;         // Decay factor for BS immunity
 	double A_clin_decay;        // Decay factor for clinical immunity
-	double mat_decay;           // Decay factor for maternal immunity 
+	double mat_decay;           // Decay factor for maternal immunity
 
 	double age_0_inv;           // Inverse of age-dependent biting parameter
 
@@ -578,5 +583,3 @@ struct Params
 };
 
 #endif
-
-

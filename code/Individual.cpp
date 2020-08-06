@@ -107,9 +107,9 @@ void Individual::state_mover(Params& theta, double lam_bite)
 	///////////////////////////////////////////////////
 	// Vector of probabilities for competing hazards
 	//
-	// These are stored in the parameter structure for convenience.      
-	// It would perhaps be more natural to have them specific for each   
-	// individual, but that would require storing them N_pop times.      
+	// These are stored in the parameter structure for convenience.
+	// It would perhaps be more natural to have them specific for each
+	// individual, but that would require storing them N_pop times.
 
 	double S_move[4];
 	double I_PCR_move[5];
@@ -120,7 +120,7 @@ void Individual::state_mover(Params& theta, double lam_bite)
 
 
 	//////////////////////////////////////////////////////////////////////
-	//     //                                                           // 
+	//     //                                                           //
 	//  0  //  S: Susceptible                                           //
 	//     //                                                           //
 	//////////////////////////////////////////////////////////////////////
@@ -131,12 +131,12 @@ void Individual::state_mover(Params& theta, double lam_bite)
 
 		if (exp(-t_step * S_out) < genunf(0, 1))
 		{
-			//theta.r_PCR   = 1.0/( theta.d_PCR_min + (theta.d_PCR_max-theta.d_PCR_min)/( 1.0 + pow((A_par+A_par_mat)*theta.A_PCR_50pc_inv,theta.K_PCR) )); 
+			//theta.r_PCR   = 1.0/( theta.d_PCR_min + (theta.d_PCR_max-theta.d_PCR_min)/( 1.0 + pow((A_par+A_par_mat)*theta.A_PCR_50pc_inv,theta.K_PCR) ));
 			theta.phi_LM = theta.phi_LM_min + (theta.phi_LM_max - theta.phi_LM_min)/(1.0 + pow((A_par + A_par_mat)*theta.A_LM_50pc_inv, theta.K_LM));
 			theta.phi_D  = theta.phi_D_min  + (theta.phi_D_max - theta.phi_D_min)/(1.0 + pow((A_clin + A_clin_mat)*theta.A_D_50pc_inv, theta.K_D));
 
 
-			S_move[0] = (1.0 - theta.phi_LM);                                      // Move to I_PCR  //  lam_H_lag*(1.0-theta.phi_LM)/S_out; 
+			S_move[0] = (1.0 - theta.phi_LM);                                      // Move to I_PCR  //  lam_H_lag*(1.0-theta.phi_LM)/S_out;
 			S_move[1] = theta.phi_LM*(1.0 - theta.phi_D);                          // Move to I_LM   //  lam_H_lag*theta.phi_LM*(1.0-theta.phi_D)/S_out;
 			S_move[2] = theta.phi_LM*theta.phi_D*(1.0 - theta.CM_cover);           // Move to I_D    //  lam_H_lag*theta.phi_LM*(1.0-theta.phi_D)*(1.0-theta.CM_cover)/S_out;
 			S_move[3] = theta.phi_LM*theta.phi_D*theta.CM_cover;                   // Move to T      //  lam_H_lag*theta.phi_LM*(1.0-theta.phi_D)*theta.CM_cover/S_out;
@@ -297,7 +297,7 @@ void Individual::state_mover(Params& theta, double lam_bite)
 
 
 	//////////////////////////////////////////////////////////////////////
-	//     //                                                           // 
+	//     //                                                           //
 	//  1  //  I_PCR: PCR detectable BS infections                      //
 	//     //                                                           //
 	//////////////////////////////////////////////////////////////////////
@@ -313,7 +313,7 @@ void Individual::state_mover(Params& theta, double lam_bite)
 			theta.phi_LM = theta.phi_LM_min + (theta.phi_LM_max - theta.phi_LM_min) / (1.0 + pow((A_par + A_par_mat)*theta.A_LM_50pc_inv, theta.K_LM));
 			theta.phi_D = theta.phi_D_min + (theta.phi_D_max - theta.phi_D_min) / (1.0 + pow((A_clin + A_clin_mat)*theta.A_D_50pc_inv, theta.K_D));
 
-			I_PCR_move[0] = theta.r_PCR / I_PCR_out;                                                           // Move to S 
+			I_PCR_move[0] = theta.r_PCR / I_PCR_out;                                                           // Move to S
 			I_PCR_move[1] = lam_H_lag*(1 - theta.phi_LM) / I_PCR_out;                                          // Move to I_PCR
 			I_PCR_move[2] = lam_H_lag*theta.phi_LM*(1.0 - theta.phi_D) / I_PCR_out;                            // Move to I_LM
 			I_PCR_move[3] = lam_H_lag*theta.phi_LM*theta.phi_D*(1.0 - theta.CM_cover) / I_PCR_out;             // Move to I_D
@@ -334,7 +334,7 @@ void Individual::state_mover(Params& theta, double lam_bite)
 
 			////////////////////////////////
 			// I_PCR -> I_PCR
-			// 
+			//
 			// This is a super-infection event and we assume boosting of immunity
 
 			if (CH_move == 1)
@@ -390,6 +390,7 @@ void Individual::state_mover(Params& theta, double lam_bite)
 					A_clin_timer = theta.u_clin;
 					A_clin_boost = 0;
 				}
+
 
 				I_PCR_new = 1;
 				I_LM_new = 1;
@@ -479,7 +480,7 @@ void Individual::state_mover(Params& theta, double lam_bite)
 
 
 	//////////////////////////////////////////////////////////////////////
-	//     //                                                           // 
+	//     //                                                           //
 	//  2  //  I_LM: LM detectable BS infection                         //
 	//     //                                                           //
 	//////////////////////////////////////////////////////////////////////
@@ -490,7 +491,7 @@ void Individual::state_mover(Params& theta, double lam_bite)
 
 		if (exp(-t_step * I_LM_out) < genunf(0, 1))
 		{
-			//theta.r_PCR = 1.0/( theta.d_PCR_min + (theta.d_PCR_max-theta.d_PCR_min)/( 1.0 + pow((A_par+A_par_mat)*theta.A_PCR_50pc_inv,theta.K_PCR) ) ); 
+			//theta.r_PCR = 1.0/( theta.d_PCR_min + (theta.d_PCR_max-theta.d_PCR_min)/( 1.0 + pow((A_par+A_par_mat)*theta.A_PCR_50pc_inv,theta.K_PCR) ) );
 			theta.phi_LM = theta.phi_LM_min + (theta.phi_LM_max - theta.phi_LM_min) / (1.0 + pow((A_par + A_par_mat)*theta.A_LM_50pc_inv, theta.K_LM));
 			theta.phi_D = theta.phi_D_min + (theta.phi_D_max - theta.phi_D_min) / (1.0 + pow((A_clin + A_clin_mat)*theta.A_D_50pc_inv, theta.K_D));
 
@@ -625,7 +626,7 @@ void Individual::state_mover(Params& theta, double lam_bite)
 
 
 	//////////////////////////////////////////////////////////////////////
-	//     //                                                           // 
+	//     //                                                           //
 	//  3  //  I_D: Clinical disease                                    //
 	//     //                                                           //
 	//////////////////////////////////////////////////////////////////////
@@ -688,7 +689,7 @@ void Individual::state_mover(Params& theta, double lam_bite)
 
 
 	//////////////////////////////////////////////////////////////////////
-	//     //                                                           // 
+	//     //                                                           //
 	//  4  //  T : Clinical episode under treatment                     //
 	//     //                                                           //
 	//////////////////////////////////////////////////////////////////////
@@ -755,7 +756,7 @@ void Individual::state_mover(Params& theta, double lam_bite)
 
 
 	//////////////////////////////////////////////////////////////////////
-	//     //                                                           // 
+	//     //                                                           //
 	//  5  //  P: Treatment prophylaxis                                 //
 	//     //                                                           //
 	//////////////////////////////////////////////////////////////////////
@@ -828,7 +829,7 @@ void Individual::state_mover(Params& theta, double lam_bite)
 ////////////////////////////////////////////////////////////////////////////////////////////
 //         //                                                                             //
 // 4.2.2.  //  Ageing and immune boosting                                                 //
-//         //                                                                             //  
+//         //                                                                             //
 ////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -963,6 +964,9 @@ void Individual::ager(Params& theta)
 	{
 		T_last_BS = T_last_BS + 1.0;
 	}
+
+	// time since onset of last blood-stage infection 
+	T_last_Symp_BS++;
 }
 
 
@@ -972,7 +976,7 @@ void Individual::ager(Params& theta)
 ////////////////////////////////////////////////////////////////////////////////////////////
 //         //                                                                             //
 // 4.2.3.  //  Case management: treatment of symptomatic cases                            //
-//         //                                                                             //  
+//         //                                                                             //
 ////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -992,6 +996,7 @@ void Individual::case_management(Params& theta)
 		G6PD_test = 0;
 
 		T_last_BS = 0.0;
+		T_last_Symp_BS = 0;
 
 		/////////////////////////////////////////////////////////////////////
 		// ACTION: administer CQ
@@ -1004,7 +1009,7 @@ void Individual::case_management(Params& theta)
 			I_D   = 0;
 			T     = 1;
 			P     = 0;
-		}else 
+		}else
 		{
 			S     = 0;
 			I_PCR = 0;
@@ -1021,7 +1026,7 @@ void Individual::case_management(Params& theta)
 	// Primaquine treatment regimen: blood-stage drugs and primaquine
 	// This is based on Narimane's primaquine treatment pathway.
 
-	if (theta.CM_regimen == 1)
+	if (theta.CM_regimen == 1 && !enrolled_in_trial)
 	{
 		///////////////////////////////////////////////////////////
 		// Intitialise
@@ -1036,6 +1041,7 @@ void Individual::case_management(Params& theta)
 		I_D_new   = 1;
 
 		T_last_BS = 0.0;
+		T_last_Symp_BS = 0;
 
 
 		/////////////////////////////////////////////////////////////////////
@@ -1053,7 +1059,7 @@ void Individual::case_management(Params& theta)
 		{
 			PQ_treat = 0;
 		}
-		
+
 
 		//////////////////////////////////////////////////////////////////////////////////////////
 		// Is G6PD testing administered to those >6 months and not pregnant? If so, count test
@@ -1108,15 +1114,24 @@ void Individual::case_management(Params& theta)
 
 
 		/////////////////////////////////////////////////////////////////////////////////
-		// ACTION: administer PQ 
+		// ACTION: administer PQ
 
 		if ((PQ_treat == 1) && (PQ_effective == 1))
 		{
-			Hyp = 0;                                  // Hypnozoites cleared
+			// Hyp = 0;                                  // Hypnozoites cleared
+			if(PQ_stratum == 1)
+			{
+				Hyp -= ignbin(Hyp, theta.CM_PQ_eff_stratum_1);
+			}
+			if(PQ_stratum == 2)
+			{
+				Hyp -= ignbin(Hyp, theta.CM_PQ_eff_stratum_2);
+			}
 
 			AQ8_proph = 1;                            // Put under prophylaxis
 			AQ8_proph_timer = theta.CM_PQ_proph;      // Time for prophylaxis set
 
+			// TO DO - NEED TO ACCOUNT FOR EFFECTS OF RADICAL CURE ON DEVELOPING LIVER STAGES
 			// Developing liver hepatic stages killed
 
 			for (int z = 0; z < lam_bite_track.size(); z++)
@@ -1127,10 +1142,10 @@ void Individual::case_management(Params& theta)
 			{
 				lam_rel_track[z] = 0.0;
 			}
-		}		
+		}
 
 		/////////////////////////////////////////////////////////////////////////////////
-		// ACTION: administer CQ 
+		// ACTION: administer CQ
 
 		if (PQ_treat == 0)
 		{
@@ -1183,7 +1198,7 @@ void Individual::case_management(Params& theta)
 	// Tafenoquine treatment regimen: blood-stage drugs and primaquine
 	// This is based on Narimane's tafenoquine treatment pathway.
 
-	if (theta.CM_regimen == 2)
+	if (theta.CM_regimen == 2 && !enrolled_in_trial)
 	{
 		///////////////////////////////////////////////////////////
 		// Initialise
@@ -1199,6 +1214,7 @@ void Individual::case_management(Params& theta)
 		G6PD_test = 0;
 
 		T_last_BS = 0.0;
+		T_last_Symp_BS = 0;
 
 
 		/////////////////////////////////////////////////////////////////////
@@ -1269,7 +1285,15 @@ void Individual::case_management(Params& theta)
 
 			if ((PQ_treat == 1) && (PQ_effective == 1))
 			{
-				Hyp = 0;                                // Hypnozoites cleared
+				// Hyp = 0;                                // Hypnozoites cleared
+				if(PQ_stratum == 1)
+				{
+					Hyp -= ignbin(Hyp, theta.CM_PQ_eff_stratum_1);
+				}
+				if(PQ_stratum == 2)
+				{
+					Hyp -= ignbin(Hyp, theta.CM_PQ_eff_stratum_2);
+				}
 
 				AQ8_proph = 1;                          // Put under prophylaxis
 				AQ8_proph_timer = theta.CM_PQ_proph;    // Timer for prophylaxis set
@@ -1397,7 +1421,7 @@ void Individual::case_management(Params& theta)
 				Hyp = 0;                               // Hypnozoites cleared
 
 				AQ8_proph = 1;                         // Put under prophylaxis
-				AQ8_proph_timer = theta.CM_TQ_proph;   // Timer for prophylaxis set  
+				AQ8_proph_timer = theta.CM_TQ_proph;   // Timer for prophylaxis set
 
 				// Developing liver hepatic stages killed
 
@@ -1413,7 +1437,15 @@ void Individual::case_management(Params& theta)
 
 			if ((PQ_treat == 1) && (PQ_effective == 1))
 			{
-				Hyp = 0;                                   // Hypnozoites cleared
+				// Hyp = 0;                                   // Hypnozoites cleared
+				if(PQ_stratum == 1)
+				{
+					Hyp -= ignbin(Hyp, theta.CM_PQ_eff_stratum_1);
+				}
+				if(PQ_stratum == 2)
+				{
+					Hyp -= ignbin(Hyp, theta.CM_PQ_eff_stratum_2);
+				}
 
 				AQ8_proph = 1;                             // Put under prophylaxis
 				AQ8_proph_timer = theta.CM_PQ_proph;       // Timer for prophylaxis set
@@ -1687,7 +1719,7 @@ void Individual::vec_con_updater(Params& theta)
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
 //  4.2.5. G6PD diagnosis                                                   //
-//         Based on data from Pal et al AJTMH 2019 study of US venous blood //  
+//         Based on data from Pal et al AJTMH 2019 study of US venous blood //
 //         The values returned (1.5, 5.0, 10.0) are representative          //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////

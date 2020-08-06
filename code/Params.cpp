@@ -74,7 +74,7 @@ SimTimes Params::read(const char *parameter_File, const char *mosquito_File[N_mo
 
 	/////////////////////////////////
 	// Human demography
-	// Note that the mean age isn't technically the mean 
+	// Note that the mean age isn't technically the mean
 	// due to the effects of truncation at maximum age
 
 	parameter_Stream >> discard >> age_mean >> discard;     // mean age of human population
@@ -85,11 +85,11 @@ SimTimes Params::read(const char *parameter_File, const char *mosquito_File[N_mo
 	het_max = 100.0;                                        // Maximum relative heterogeneity value
 
 	preg_age_low   = 16.0*365.0;                            // lowest age of pregnancy
-	preg_age_high  = 45.0*365.0;                            // highest age of pregnancy  
-	occup_age_low  = 16.0*365.0;                            // lowest age of occupational exposure   
+	preg_age_high  = 45.0*365.0;                            // highest age of pregnancy
+	occup_age_low  = 16.0*365.0;                            // lowest age of occupational exposure
 	occup_age_high = 65.0*365.0;                            // highest age of occupational exposure
 
-	
+
 	////////////////////////////////
 	// Proportion of pregnant women
 
@@ -122,7 +122,7 @@ SimTimes Params::read(const char *parameter_File, const char *mosquito_File[N_mo
 	parameter_Stream >> discard >> d_latent >> discard;             // latent period in liver
 	parameter_Stream >> discard >> r_LM >> discard;                 // rate of recovery from LM detectable infection
 	parameter_Stream >> discard >> r_D >> discard;                  // rate of recovery from symptomatic disease
-	parameter_Stream >> discard >> r_T >> discard;                  // rate of progression through treatment 
+	parameter_Stream >> discard >> r_T >> discard;                  // rate of progression through treatment
 	parameter_Stream >> discard >> d_PCR_min >> discard;            // minimum duration of PCR-detectable infection - full immunity
 	parameter_Stream >> discard >> d_PCR_max >> discard;            // maximum duration of PCR-detectable infection - no immunity
 
@@ -138,7 +138,7 @@ SimTimes Params::read(const char *parameter_File, const char *mosquito_File[N_mo
 	parameter_Stream >> discard >> u_par >> discard;         // scale paramter for acquisition of blood-stage immunity
 	parameter_Stream >> discard >> r_par >> discard;         // rate of decay of blood-stage immunity
 
-	parameter_Stream >> discard >> phi_LM_max >> discard;    // probability of blood-stage infection with no immunity 
+	parameter_Stream >> discard >> phi_LM_max >> discard;    // probability of blood-stage infection with no immunity
 	parameter_Stream >> discard >> phi_LM_min >> discard;    // probability of blood-stage infection with maximum immunity
 	parameter_Stream >> discard >> A_LM_50pc >> discard;     // blood-stage immunity scale parameter
 	parameter_Stream >> discard >> K_LM >> discard;          // blood-stage immunity shape parameter
@@ -173,7 +173,7 @@ SimTimes Params::read(const char *parameter_File, const char *mosquito_File[N_mo
 	////////////////////////////////
 	// Baseline treatment parameters
 
-	parameter_Stream >> discard >> CM_regimen >> discard;           // treatment regimen: 0 = blood-stage (baseline default); 1 = primaquine; 2 = tafenoquine 
+	parameter_Stream >> discard >> CM_regimen >> discard;           // treatment regimen: 0 = blood-stage (baseline default); 1 = primaquine; 2 = tafenoquine
 	parameter_Stream >> discard >> CM_cover >> discard;             // proportion of symptomatic cases treated
 
 	parameter_Stream >> discard >> CM_CQ_eff >> discard;            // efficacy of chloroquine treatment (on its own)
@@ -189,7 +189,14 @@ SimTimes Params::read(const char *parameter_File, const char *mosquito_File[N_mo
 	parameter_Stream >> discard >> CM_PQ_adhere >> discard;         // adherence of first-line primaquine treatment
 	parameter_Stream >> discard >> CM_PQ_lowage >> discard;         // minimum age for primaquine treatment
 
-	CM_PQ_coveff = CM_cover*CM_PQ_eff*CM_PQ_adhere;                 // combined coverage and efficacy of blood-stage drugs
+	parameter_Stream >> discard >> CM_PQ_prop_stratum_1 >> discard;  // proportion of individuals that belong to PQ efficacy statum 1
+	parameter_Stream >> discard >> CM_PQ_eff_stratum_1 >> discard;		// efficacy of first-line primaquine treatment for stratum 1
+	parameter_Stream >> discard >> CM_PQ_eff_stratum_2 >> discard; 	// efficacy of first-line primaquine treatment for stratum 2
+
+	CM_PQ_prop_stratum_2 = 1.0 - CM_PQ_prop_stratum_1;
+
+	// CM_PQ_coveff = CM_cover*CM_PQ_eff*CM_PQ_adhere;                 // combined coverage and efficacy of blood-stage drugs
+	CM_PQ_coveff = CM_cover * (CM_PQ_prop_stratum_1 * CM_PQ_eff_stratum_1 + CM_PQ_prop_stratum_2 * CM_PQ_eff_stratum_2) * CM_PQ_adhere;  // combined coverage and efficcy of blood-stage drugs
 
 
 	parameter_Stream >> discard >> CM_PQ_G6PD_risk >> discard;      // G6PD risk for primaquine
@@ -210,8 +217,8 @@ SimTimes Params::read(const char *parameter_File, const char *mosquito_File[N_mo
 	parameter_Stream >> discard >> sig_G6PD_het >> discard;   // Standard deviation in G6PD activity in heterozygous deficients
 	parameter_Stream >> discard >> mu_G6PD_def >> discard;    // Mean G6PD activity in homozygous deficients
 	parameter_Stream >> discard >> sig_G6PD_def >> discard;   // Standard deviation in G6PD_activity in homozygous deficients
-	
-	parameter_Stream >> discard >> CYP2D6_prev >> discard;    // prevalence of CYP2D6 phenotype 
+
+	parameter_Stream >> discard >> CYP2D6_prev >> discard;    // prevalence of CYP2D6 phenotype
 
 
 	////////////////////////////////////////////////////////
@@ -434,7 +441,7 @@ SimTimes Params::read(const char *parameter_File, const char *mosquito_File[N_mo
 		// Seasonality paramters
 		// Denominator for seasonality - see Griffin (2015) PLoS Comp Biol
 
-		mosquito_Stream >> discard >> dry_seas[v] >> discard;      // Proportion of dry season transmission compared to mean 
+		mosquito_Stream >> discard >> dry_seas[v] >> discard;      // Proportion of dry season transmission compared to mean
 		mosquito_Stream >> discard >> kappa_seas[v] >> discard;    // Shape parameter for seasonality
 		mosquito_Stream >> discard >> t_peak_seas[v] >> discard;   // Timing of peak for seasonal transmission
 
@@ -454,10 +461,10 @@ SimTimes Params::read(const char *parameter_File, const char *mosquito_File[N_mo
 
 		delta_2 = delta - delta_1;                                 // Time spend resting during gonotrophic cycle
 
-		p_1[v] = exp(-mu_M[v]*delta_1);                            // Probability of surviving foraging  
+		p_1[v] = exp(-mu_M[v]*delta_1);                            // Probability of surviving foraging
 		p_2[v] = exp(-mu_M[v]*delta_2);                            // Probability of surviving gonotrophy
 
-		aa[v] = Q_0[v] / (delta_1 + delta_2);                      // mosquito biting frequency 
+		aa[v] = Q_0[v] / (delta_1 + delta_2);                      // mosquito biting frequency
 
 		eps_max[v] = beta_larvae * (exp(delta*mu_M[v]) - 1.0) / mu_M[v];   // Maximum numbers of eggs per batch
 
@@ -505,8 +512,8 @@ SimTimes Params::read(const char *parameter_File, const char *mosquito_File[N_mo
 	//                                                          //
 	//////////////////////////////////////////////////////////////
 
-	A_par_decay  = exp(-r_par*t_step);          // 1 - proportion decay of anti-parasite immunity in one time step  
-	A_clin_decay = exp(-r_clin*t_step);         // 1 - proportion decay of clinical immunity in one time step 
+	A_par_decay  = exp(-r_par*t_step);          // 1 - proportion decay of anti-parasite immunity in one time step
+	A_clin_decay = exp(-r_clin*t_step);         // 1 - proportion decay of clinical immunity in one time step
 	mat_decay    = exp(-d_mat*t_step);          // 1 - proportion decay of maternal immunity in one time step
 
 	age_0_inv = 1.0/age_0;                      // Inverse of age-dependent biting parameter
@@ -518,7 +525,7 @@ SimTimes Params::read(const char *parameter_File, const char *mosquito_File[N_mo
 	P_dead     = 1.0 - exp(-t_step*mu_H);           // Probability of death in one time step
 	Preg_daily = 1.0 - exp(-t_step*preg_rate);      // Probability of becoming pregnant in a day (KEEP AN EYE ON THIS - WILL VARY BETWEEN POPULATIONS)
 
-	P_PYR_decay = exp(-PYR_decay * t_step);     // 1 - proportion decay of pyrethroid insecticide on LLINS  
+	P_PYR_decay = exp(-PYR_decay * t_step);     // 1 - proportion decay of pyrethroid insecticide on LLINS
 	P_IRS_decay = exp(-IRS_decay * t_step);     // 1 - proportion decay of IRS insecticide
 
 
@@ -597,5 +604,3 @@ double gammln(const double xx)
 	for (j = 0; j < 14; j++) ser += cof[j] / ++y;
 	return tmp + log(2.5066282746310005*ser / x);
 }
-
-

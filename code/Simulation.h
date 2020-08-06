@@ -23,6 +23,7 @@
 #define PVIVAX_MODEL_SIMULATION
 
 #include "Intervention.h"
+#include "Trial.h"
 
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -35,7 +36,7 @@ class Simulation
 {
 public:
 	//////////////////////////////////////////////////////////////////////////
-	//  7.1.1.1.  Functions                                                 //    
+	//  7.1.1.1.  Functions                                                 //
 	//////////////////////////////////////////////////////////////////////////
 
 	/////////////////////////////////////
@@ -46,13 +47,17 @@ public:
 
 	/////////////////////////////////////
 	// Simulate the model and store the output
-	
+
 	void run(Params& theta, Population& POP, Intervention& INTVEN);
+
+	/////////////////////////////////////
+	// Simulate the model and trial and store the output
+	void runTrial(Params& theta, Population& POP, Intervention& INTVEN, Trial& TRIAL);
 
 
 	/////////////////////////////////////
 	// Write output file
-	
+
 	void write_output(const char *output_File);
 
 
@@ -79,9 +84,9 @@ public:
 	vector<double> EIR_dom_t;
 	vector<double> EIR_occ_t;
 
-	vector<vector<int>> prev_all;   // Contains {N_pop, PvPR_PCR, PvPR_LM, Pv_clin, PvHR, PvHR_batches, new_PCR, new_LM, new_D, new_T} 
-	vector<vector<int>> prev_U5;    // Contains {N_pop, PvPR_PCR, PvPR_LM, Pv_clin, PvHR, PvHR_batches, new_PCR, new_LM, new_D, new_T} 
-	vector<vector<int>> prev_U10;   // Contains {N_pop, PvPR_PCR, PvPR_LM, Pv_clin, PvHR, PvHR_batches, new_PCR, new_LM, new_D, new_T} 
+	vector<vector<int>> prev_all;   // Contains {N_pop, PvPR_PCR, PvPR_LM, Pv_clin, PvHR, PvHR_batches, new_PCR, new_LM, new_D, new_T}
+	vector<vector<int>> prev_U5;    // Contains {N_pop, PvPR_PCR, PvPR_LM, Pv_clin, PvHR, PvHR_batches, new_PCR, new_LM, new_D, new_T}
+	vector<vector<int>> prev_U10;   // Contains {N_pop, PvPR_PCR, PvPR_LM, Pv_clin, PvHR, PvHR_batches, new_PCR, new_LM, new_D, new_T}
 
 
 	///////////////////////////////////////

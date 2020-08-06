@@ -35,7 +35,7 @@ class Population
 public:
 
 	//////////////////////////////////////////////////////////////////////////
-	//  5.1.1.1.  Class member functions                                    //      
+	//  5.1.1.1.  Class member functions                                    //
 	//////////////////////////////////////////////////////////////////////////
 
 	////////////////////////////////////////////////////
@@ -70,7 +70,7 @@ public:
 	////////////////////////////////////////////////
 	// Human population
 
-	int N_pop;                      // Population size - we have balanced demography at the moment so this will be effectively constant 
+	int N_pop;                      // Population size - we have balanced demography at the moment so this will be effectively constant
 
 	vector<Individual> people;      // A vector of individuals
 
@@ -107,35 +107,35 @@ public:
 
 	int yH[N_H_comp];   // Human compartmental states
 
-	int prev_all[15];   // Contains {N_pop, PvPR_PCR, PvPR_LM, Pv_clin, PvHR, PvHR_batches, new_PCR, new_LM, new_D, new_BS, new_PQ, new_TQ, G6PD_test, PQ_effective, TQ_effective} 
-	int prev_U5[15];    // Contains {N_pop, PvPR_PCR, PvPR_LM, Pv_clin, PvHR, PvHR_batches, new_PCR, new_LM, new_D, new_BS, new_PQ, new_TQ, G6PD_test, PQ_effective, TQ_effective} 
-	int prev_U10[15];   // Contains {N_pop, PvPR_PCR, PvPR_LM, Pv_clin, PvHR, PvHR_batches, new_PCR, new_LM, new_D, new_BS, new_PQ, new_TQ, G6PD_test, PQ_effective, TQ_effective} 
+	int prev_all[15];   // Contains {N_pop, PvPR_PCR, PvPR_LM, Pv_clin, PvHR, PvHR_batches, new_PCR, new_LM, new_D, new_BS, new_PQ, new_TQ, G6PD_test, PQ_effective, TQ_effective}
+	int prev_U5[15];    // Contains {N_pop, PvPR_PCR, PvPR_LM, Pv_clin, PvHR, PvHR_batches, new_PCR, new_LM, new_D, new_BS, new_PQ, new_TQ, G6PD_test, PQ_effective, TQ_effective}
+	int prev_U10[15];   // Contains {N_pop, PvPR_PCR, PvPR_LM, Pv_clin, PvHR, PvHR_batches, new_PCR, new_LM, new_D, new_BS, new_PQ, new_TQ, G6PD_test, PQ_effective, TQ_effective}
 
 	double EIR_dom_t;        // EIR (domestic)
 	double EIR_occ_t;        // EIR (occupational)
 	int LLIN_cov_t;          // LLIN coverage
 	int IRS_cov_t;           // IRS coverage
 	int IVM_cov_t;           // IVM coverage
-	int CQ_treat_t;          // Indicator for chloroquine (or other blood-stage drug) treatment 
+	int CQ_treat_t;          // Indicator for chloroquine (or other blood-stage drug) treatment
 	int PQ_treat_t;          // Indicator for primaquine treatment
 	int TQ_treat_t;          // Indicator for tafenoquine treatment
 	int pregnant_t;          // Coverage with front-line treatment (primaquine or tafenoquine)
 
 	int PQ_effective_t;     // Effective 8-aminoquinoline treatment (PQ)
-	int PQ_overtreat_t;     // Over-treatment with 8-aminoquinolines (PQ) - defined as someone without hypnozoites being treated 
+	int PQ_overtreat_t;     // Over-treatment with 8-aminoquinolines (PQ) - defined as someone without hypnozoites being treated
 	int PQ_overtreat_9m_t;  // Over-treatment with 8-aminoquinolines (PQ) - defined as someone without BS infection in last 9 mths being treated
 
 	int TQ_effective_t;     // Effective 8-aminoquinoline treatment (TQ)
-	int TQ_overtreat_t;     // Over-treatment with 8-aminoquinolines (TQ) - defined as someone without hypnozoites being treated 
+	int TQ_overtreat_t;     // Over-treatment with 8-aminoquinolines (TQ) - defined as someone without hypnozoites being treated
 	int TQ_overtreat_9m_t;  // Over-treatment with 8-aminoquinolines (TQ) - defined as someone without BS infection in last 9 mths being treated
 
 	int cases_M_O16_t;       // Detected cases in males over 16
 	int cases_M_U16_t;       // Detected cases in males under 16
 	int cases_F_O16_t;       // Detected cases in females over 16
-	int cases_F_U16_t;       // Detected cases in females under 16 
+	int cases_F_U16_t;       // Detected cases in females under 16
 	int cases_preg_t;        // Detected cases in pregnant women
 
-	double A_par_mean_t;     // Average anti-parasite immunity 
+	double A_par_mean_t;     // Average anti-parasite immunity
 	double A_clin_mean_t;    // Average anti-clinical immunity
 
 
@@ -144,7 +144,7 @@ public:
 	//  These are only needed for initialising the simulation
 
 	////////////////////////////////////////
-	// Age and heterogeneity demographics 
+	// Age and heterogeneity demographics
 
 	double age_bounds[N_age + 1];
 
@@ -167,7 +167,7 @@ public:
 
 
 	////////////////////////////////////////
-	// Ageing rates 
+	// Ageing rates
 
 	double r_age[N_age];
 
@@ -175,17 +175,26 @@ public:
 
 
 	////////////////////////////////////////
-	// Equilibrium vectors 
+	// Equilibrium vectors
 
 	vector<vector<vector<vector<vector<double>>>>> yH_eq;
+	// double yH_eq[N_gen][N_age][N_het][K_max + 1][N_H_comp];
 	vector<vector<vector<double>>> lam_eq;
+	// double lam_eq[N_gen][N_age][N_het];
 	vector<vector<vector<vector<double>>>> A_par_eq;
+	// double A_par_eq[N_gen][N_age][N_het][K_max+1];
 	vector<vector<vector<double>>> A_par_eq_mean;
+	// double A_par_eq_mean[N_gen][N_age][N_het];
 	vector<vector<vector<vector<double>>>> A_clin_eq;
+	// double A_clin_eq[N_gen][N_age][N_het][K_max+1];
 	vector<vector<vector<double>>> A_clin_eq_mean;
+	// double A_clin_eq_mean[N_gen][N_age][N_het];
 	vector<vector<vector<vector<double>>>> phi_LM_eq;
+	// double phi_LM_eq[N_gen][N_age][N_het][K_max+1];
 	vector<vector<vector<vector<double>>>> phi_D_eq;
+	// double phi_D_eq[N_gen][N_age][N_het][K_max+1];
 	vector<vector<vector<vector<double>>>> r_PCR_eq;
+	// double r_PCR_eq[N_gen][N_age][N_het][K_max+1];
 
 	vector<vector<vector<vector<double>>>> yH_eq_cumsum;
 
@@ -216,6 +225,7 @@ public:
 	int index_preg_age_high;
 	int index_occup_age_low;
 	int index_occup_age_high;
+
 };
 
 #endif

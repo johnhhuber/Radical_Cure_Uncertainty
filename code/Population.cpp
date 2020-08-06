@@ -6,7 +6,7 @@
 ///  Dr Michael White                                                     ///
 ///  Institut Pasteur                                                     ///
 ///  michael.white@pasteur.fr                                             ///
-///                                                                       ///    
+///                                                                       ///
 ///  EQUILIBRIUM SETUP                                                    ///
 ///  This set of functions calculates the equilibrium set up of the       ///
 ///  population. It is only called once while the population is           ///
@@ -41,15 +41,15 @@ void MM_ij( int g, int i, int j, Params& theta, double r_age[], vector<vector<do
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
 //  5.2.2.  Update the vector of human classes                              //
-//                                                                          // 
+//                                                                          //
 //          THINK CAREFULLY ABOUT THE ORDERING OF EVENTS                    //
 //////////////////////////////////////////////////////////////////////////////
 
 void Population::human_step(Params& theta)
 {
 	//////////////////////////////////////////////////////////////////////////
-	// 5.2.2.1. Temporary objects for setting up individuals' intervention   
-	//          access characteristics 
+	// 5.2.2.1. Temporary objects for setting up individuals' intervention
+	//          access characteristics
 
 	float GMN_parm[(N_int)*(N_int + 3) / 2 + 1];
 	float GMN_work[N_int];
@@ -182,7 +182,7 @@ void Population::human_step(Params& theta)
 
 			if (genunf(0.0, 1.0) < theta.G6PD_prev)
 			{
-				// males, deficient (hemizygous) 
+				// males, deficient (hemizygous)
 
 				HH.G6PD_def = 1;
 				HH.G6PD_activity = gennor(theta.mu_G6PD_def, theta.sig_G6PD_def);
@@ -200,7 +200,7 @@ void Population::human_step(Params& theta)
 
 			if (q_rand <= theta.G6PD_prev*theta.G6PD_prev)
 			{
-				// females, deficient (homozygous) 
+				// females, deficient (homozygous)
 
 				HH.G6PD_def = 1;
 				HH.G6PD_activity = gennor(theta.mu_G6PD_def, theta.sig_G6PD_def);
@@ -208,7 +208,7 @@ void Population::human_step(Params& theta)
 
 			if ((q_rand > theta.G6PD_prev*theta.G6PD_prev) && (q_rand <= theta.G6PD_prev*theta.G6PD_prev + 2 * theta.G6PD_prev*(1.0 - theta.G6PD_prev)))
 			{
-				// females, deficient (heterozygous) 
+				// females, deficient (heterozygous)
 
 				HH.G6PD_def = 2;
 				HH.G6PD_activity = gennor(theta.mu_G6PD_het, theta.sig_G6PD_het);
@@ -216,7 +216,7 @@ void Population::human_step(Params& theta)
 
 			if (q_rand > (theta.G6PD_prev*theta.G6PD_prev + 2 * theta.G6PD_prev*(1.0 - theta.G6PD_prev)))
 			{
-				// females, normal (homozygous) 
+				// females, normal (homozygous)
 
 				HH.G6PD_def = 0;
 				HH.G6PD_activity = gennor(theta.mu_G6PD_nor, theta.sig_G6PD_nor);
@@ -234,6 +234,17 @@ void Population::human_step(Params& theta)
 		HH.preg_age = 0;
 		HH.pregnant = 0;
 		HH.preg_timer = 0.0;
+
+		//////////////////////////////////////////////////////////////////
+		// Assign stratum for PQ efficacy
+		// 1 = stratum 1
+		// 2 = stratum 2
+		if(genunf(0.0, 1.0) < theta.CM_PQ_prop_stratum_1)
+		{
+			HH.PQ_stratum = 1;
+		}else{
+			HH.PQ_stratum = 2;
+		}
 
 
 		/////////////////////////////////
@@ -306,6 +317,12 @@ void Population::human_step(Params& theta)
 			HH.z_VC[v] = 0.0;
 		}
 
+		///////////////////////////////////////////////////
+		// Not enrolled in trial at birth
+		HH.enrolled_in_trial = false;
+		HH.participant_ID = -999;
+		HH.T_last_Symp_BS = 1000000;
+
 
 		/////////////////////////////////////////////////////////////////
 		// 2.4.5. Push the created individual onto the vector of people
@@ -330,7 +347,7 @@ void Population::human_step(Params& theta)
 	///////////////////////////////////////////////////
 	// 5.2.2.5. Update proportion of bites
 	//
-	//          Note the ordering of n and g loops. Need to 
+	//          Note the ordering of n and g loops. Need to
 	//          check if this makes a difference for speed.
 	//
 	//          Should be able to make this quicker
@@ -460,7 +477,7 @@ void Population::human_step(Params& theta)
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
 //  5.2.3.  Summarise the output from the population                        //
-//                                                                          // 
+//                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 
 void Population::summary()
@@ -642,7 +659,7 @@ void Population::summary()
 	cases_M_O16_t = 0;       // Detected cases in males over 16
 	cases_M_U16_t = 0;       // Detected cases in males under 16
 	cases_F_O16_t = 0;       // Detected cases in females over 16
-	cases_F_U16_t = 0;       // Detected cases in females under 16 
+	cases_F_U16_t = 0;       // Detected cases in females under 16
 	cases_preg_t  = 0;       // Detected cases in pregnant women
 
 	for (int n = 0; n < N_pop; n++)
@@ -693,7 +710,7 @@ void Population::summary()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 //          //                                                                                        //
-//  5.2.4.  //  LU decomposition of a matrix                                                          // 
+//  5.2.4.  //  LU decomposition of a matrix                                                          //
 //          //  Based on ludcmp.cpp from Numerical Recipes in C++                                     //
 //          //                                                                                        //
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -701,10 +718,10 @@ void Population::summary()
 //  Given a matrix a[1..n][1..n], this routine replaces it by the LU decomposition of a rowwise       //
 //  permutation of itself. a and n are input. a is output, arranged as in equation (2.3.14) above;    //
 //  indx[1..n] is an output vector that records the row permutation effected by the partial           //
-//  pivoting; d is output as ±1 depending on whether the number of row interchanges was even          //
+//  pivoting; d is output as ï¿½1 depending on whether the number of row interchanges was even          //
 //  or odd, respectively. This routine is used in combination with lubksb to solve linear equations   //
 //  or invert a matrix                                                                                //
-//                                                                                                    // 
+//                                                                                                    //
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -761,7 +778,7 @@ void ludcmp(vector<vector<double>> &a, int n_dim, vector<int> &indx, double &d)
 
 //////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////
-//          //                                                      // 
+//          //                                                      //
 //  5.2.5.  //  Matrix back substitution                            //
 //          //  Based on lubksb.cpp from Numerical Recipes in C++   //
 //          //                                                      //
@@ -830,7 +847,7 @@ void matrix_inv(vector<vector<double>> &a, int n, vector<vector<double>> &a_inv)
 
 ///////////////////////////////////////////////////
 ///////////////////////////////////////////////////
-//          //                                   // 
+//          //                                   //
 //  5.2.7.  //  Matrix multiplication            //
 //          //  Calculates inv(MM*)xx            //
 //          //                                   //
@@ -870,7 +887,7 @@ void inv_MM_bb(vector<vector<double>> &MM, vector<double> &bb, vector<double> &x
 
 ///////////////////////////////////////////////////
 ///////////////////////////////////////////////////
-//          //                                   // 
+//          //                                   //
 //  5.2.8.  //  Equilibrium matrix               //
 //          //                                   //
 ///////////////////////////////////////////////////
@@ -943,7 +960,7 @@ void MM_ij( int g, int i, int j, Params& theta, double r_age[], vector<vector<do
 
 
 	/////////////////////////////////////////////
-	// 5.2.8.3. Account for transitions into 
+	// 5.2.8.3. Account for transitions into
 	// the treatment state with zero hypnozoites
 
 	for (int k1 = 0; k1 < (K_max + 1); k1++)
@@ -970,7 +987,7 @@ void MM_ij( int g, int i, int j, Params& theta, double r_age[], vector<vector<do
 //          //                                                 //
 //  5.2.9.  //  Guass-Hermite weights for Gaussian quadrature  //
 //          //  integration with Normal distribution.          //
-//          //  Code is adapted from gauher.cpp from NR3       // 
+//          //  Code is adapted from gauher.cpp from NR3       //
 //          //                                                 //
 /////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////
@@ -1080,7 +1097,7 @@ void Population::gauher(Params& theta)
 
 ////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////
-//           //                                                                   // 
+//           //                                                                   //
 //  5.2.10.  //  Setup objects for stroing population information.                //
 //           //                                                                   //
 ////////////////////////////////////////////////////////////////////////////////////
@@ -1095,7 +1112,7 @@ void Population::pop_setup(Params& theta)
 	// 5.2.10.1.1. Bounds of age bins
 
 	//double age_bounds_set[N_age+1] = {0.0*365.0, 20.0*365.0, 40.0*365.0, 60.0*365.0, 80.0*365.0};
-	
+
 	double age_bounds_set[N_age + 1] = { 0.0*365.0, 0.2*365.0, 0.4*365.0, 0.6*365.0, 0.8*365.0, 1.0*365.0,
 									     1.2*365.0, 1.4*365.0, 1.6*365.0, 1.8*365.0, 2.0*365.0,
 									     2.2*365.0, 2.4*365.0, 2.6*365.0, 2.8*365.0, 3.0*365.0,
@@ -1104,7 +1121,7 @@ void Population::pop_setup(Params& theta)
 									     11.0*365.0, 12.0*365.0, 13.0*365.0, 14.0*365.0, 15.0*365.0, 16.0*365.0, 17.0*365.0, 18.0*365.0, 19.0*365.0, 20.0*365.0,
 									     22.0*365.0, 24.0*365.0, 26.0*365.0, 28.0*365.0, 30.0*365.0, 32.0*365.0, 34.0*365.0, 36.0*365.0, 38.0*365.0, 40.0*365.0,
 									     45.0*365.0, 50.0*365.0, 55.0*365.0, 60.0*365.0, 65.0*365.0, 70.0*365.0, 75.0*365.0, 80.0*365.0 };
-	
+
 	for (int i = 0; i < (N_age + 1); i++)
 	{
 		age_bounds[i] = age_bounds_set[i];
@@ -1306,7 +1323,7 @@ void Population::pop_setup(Params& theta)
 	}
 
 	double denom_gij[N_mosq];
-	
+
 	for (int v = 0; v < N_mosq; v++)
 	{
 		denom_gij[v] = 0.0;
@@ -1339,8 +1356,8 @@ void Population::pop_setup(Params& theta)
 
 
 	///////////////////////////////////////////////////
-	// 5.2.10.6. Proportion of total population with 
-	//           occupational exposure  
+	// 5.2.10.6. Proportion of total population with
+	//           occupational exposure
 
 	denom_w_occup = 0.0;
 
@@ -1402,7 +1419,8 @@ void Population::pop_setup(Params& theta)
 		{
 			for (int i = 0; i < N_age; i++)
 			{
-				treat_PQeff[g][i] = (1.0 - theta.low_G6PD_activity[g])*theta.CM_PQ_adhere*theta.CM_PQ_eff;
+				// treat_PQeff[g][i] = (1.0 - theta.low_G6PD_activity[g])*theta.CM_PQ_adhere*theta.CM_PQ_eff;
+				treat_PQeff[g][i] = (1.0 - theta.low_G6PD_activity[g]) * theta.CM_PQ_adhere * (theta.CM_PQ_prop_stratum_1 * theta.CM_PQ_eff_stratum_1 + theta.CM_PQ_prop_stratum_2 * theta.CM_PQ_eff_stratum_2);
 			}
 		}
 
@@ -1495,10 +1513,10 @@ void Population::pop_setup(Params& theta)
 
 ////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////
-//           //                                                                   // 
+//           //                                                                   //
 //  5.2.11.  //  This calculates the non-seasonal equilibrium solution from a     //
-//           //  comparable deterministic model. This will give an approximately  // 
-//           //  correct solution for a seasonal setting.                         //           
+//           //  comparable deterministic model. This will give an approximately  //
+//           //  correct solution for a seasonal setting.                         //
 //           //                                                                   //
 ////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////
@@ -1647,7 +1665,7 @@ void Population::pop_at_equil(Params& theta)
 
 
 	///////////////////////////////////////////////////////////
-	// 5.2.11.2. PQ transmission matrices                         
+	// 5.2.11.2. PQ transmission matrices
 
 	theta_HPZzero.resize(N_H_comp);
 	for (int p = 0; p < (N_H_comp); p++)
@@ -1916,8 +1934,8 @@ void Population::pop_at_equil(Params& theta)
 		{
 			/////////////////////////////
 			//                         //
-			//  Youngest age category  // 
-			//                         // 
+			//  Youngest age category  //
+			//                         //
 			/////////////////////////////
 
 			/////////////////////////////
@@ -1989,8 +2007,8 @@ void Population::pop_at_equil(Params& theta)
 
 			/////////////////////////////
 			//                         //
-			//  Older age categories   // 
-			//                         // 
+			//  Older age categories   //
+			//                         //
 			/////////////////////////////
 
 			for (int i = 1; i < N_age; i++)
@@ -2113,8 +2131,8 @@ void Population::pop_at_equil(Params& theta)
 		{
 			/////////////////////////////
 			//                         //
-			//  Youngest age category  // 
-			//                         // 
+			//  Youngest age category  //
+			//                         //
 			/////////////////////////////
 
 			/////////////////////////////
@@ -2186,8 +2204,8 @@ void Population::pop_at_equil(Params& theta)
 
 			/////////////////////////////
 			//                         //
-			//  Older age categories   // 
-			//                         // 
+			//  Older age categories   //
+			//                         //
 			/////////////////////////////
 
 			for (int i = 1; i < N_age; i++)
@@ -2475,7 +2493,7 @@ void Population::pop_at_equil(Params& theta)
 			}
 		}
 	}
-	
+
 
 	//////////////////////////////////////////////////////////////
 	//////////////////////////////////////////////////////////////
@@ -2559,7 +2577,7 @@ void Population::pop_at_equil(Params& theta)
 
 
 	//////////////////////////////////////////////////////////////
-	// Calculate probability for each compartment 
+	// Calculate probability for each compartment
 
 	yH_eq_cumsum.resize(N_gen);
 	for (int g = 0; g < N_gen; g++)
@@ -2733,7 +2751,7 @@ void Population::pop_at_equil(Params& theta)
 
 ////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////
-//           //                                                                   // 
+//           //                                                                   //
 //  5.2.12.  //  Initialise a population of individuals at equilibrium            //
 //           //                                                                   //
 ////////////////////////////////////////////////////////////////////////////////////
@@ -2742,7 +2760,7 @@ void Population::pop_at_equil(Params& theta)
 void Population::ind_at_equil(Params& theta)
 {
 	///////////////////////////////////////////////////////////////////////////
-	// 5.2.12.1. Temporary objects for setting up individuals            
+	// 5.2.12.1. Temporary objects for setting up individuals
 
 	double rand_comp;
 	double age_start, zeta_start;
@@ -2762,12 +2780,12 @@ void Population::ind_at_equil(Params& theta)
 
 
 	///////////////////////////////////////////////////////////////////////////
-	// 5.2.12.2. Loop through and create N_pop individuals            
+	// 5.2.12.2. Loop through and create N_pop individuals
 
 	for (int n = 0; n < N_pop; n++)
 	{
 		//////////////////////////////////////////////////////////////////
-		// 5.2.12.2.1. Assign age and heterogeneity 
+		// 5.2.12.2.1. Assign age and heterogeneity
 
 		age_start = genexp(theta.age_mean);
 
@@ -2785,7 +2803,7 @@ void Population::ind_at_equil(Params& theta)
 
 
 		//////////////////////////////////////////////////////////////////
-		// 5.2.12.2.2. Find appropriate age and het compartment 
+		// 5.2.12.2.2. Find appropriate age and het compartment
 
 		i_index = 0;
 
@@ -2851,7 +2869,7 @@ void Population::ind_at_equil(Params& theta)
 
 			if (genunf(0.0, 1.0) < theta.G6PD_prev)
 			{
-				// males, deficient (hemizygous) 
+				// males, deficient (hemizygous)
 
 				HH.G6PD_def = 1;
 				HH.G6PD_activity = gennor(theta.mu_G6PD_def, theta.sig_G6PD_def);
@@ -2869,7 +2887,7 @@ void Population::ind_at_equil(Params& theta)
 
 			if (q_rand <= theta.G6PD_prev*theta.G6PD_prev)
 			{
-				// females, deficient (homozygous) 
+				// females, deficient (homozygous)
 
 				HH.G6PD_def = 1;
 				HH.G6PD_activity = gennor(theta.mu_G6PD_def, theta.sig_G6PD_def);
@@ -2877,7 +2895,7 @@ void Population::ind_at_equil(Params& theta)
 
 			if ((q_rand > theta.G6PD_prev*theta.G6PD_prev) && (q_rand <= theta.G6PD_prev*theta.G6PD_prev + 2 * theta.G6PD_prev*(1.0 - theta.G6PD_prev)))
 			{
-				// females, deficient (heterozygous) 
+				// females, deficient (heterozygous)
 
 				HH.G6PD_def = 2;
 				HH.G6PD_activity = gennor(theta.mu_G6PD_het, theta.sig_G6PD_het);
@@ -2885,7 +2903,7 @@ void Population::ind_at_equil(Params& theta)
 
 			if (q_rand > (theta.G6PD_prev*theta.G6PD_prev + 2 * theta.G6PD_prev*(1.0 - theta.G6PD_prev)))
 			{
-				// females, normal (homozygous) 
+				// females, normal (homozygous)
 
 				HH.G6PD_def = 0;
 				HH.G6PD_activity = gennor(theta.mu_G6PD_nor, theta.sig_G6PD_nor);
@@ -2903,6 +2921,19 @@ void Population::ind_at_equil(Params& theta)
 
 
 		HH.T_last_BS = 1000000.0;
+		HH.T_last_Symp_BS = 1000000;
+
+		//////////////////////////////////////////////////////////////////
+		// Assign stratum for PQ efficacy
+		// 1 = stratum 1
+		// 2 = stratum 2
+		if(genunf(0.0, 1.0) < theta.CM_PQ_prop_stratum_1)
+		{
+			HH.PQ_stratum = 1;
+		}else{
+			HH.PQ_stratum = 2;
+		}
+
 
 
 		///////////////////////////////////////////
@@ -3043,6 +3074,10 @@ void Population::ind_at_equil(Params& theta)
 			HH.z_VC[v] = 0.0;
 		}
 
+		///////////////////////////////////////////////////
+		// Not enrolled in trial at birth
+		HH.enrolled_in_trial = false;
+		HH.participant_ID = -999;
 
 		///////////////////////////////////////////////////
 		////////////////////////////////////////////////////

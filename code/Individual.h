@@ -82,11 +82,12 @@ public:
 	double zeta_het;                 // Heterogeneity in exposure to mosquitoes
 
 	int gender;                     // 0 = male (domestic); 1 = male (occupational); 2 = female
-	int G6PD_def;                   // Is the person G6PD deficient? 0 = normal; 1 = deficient (homozygous); 2 = deficient (heterozygous - female only)  
-	double G6PD_activity;            // G6PD activity - quantitative measurement (true value)     
-	double G6PD_read;                // G6PD activity - quantitative measurement (from dx)    
+	int G6PD_def;                   // Is the person G6PD deficient? 0 = normal; 1 = deficient (homozygous); 2 = deficient (heterozygous - female only)
+	double G6PD_activity;            // G6PD activity - quantitative measurement (true value)
+	double G6PD_read;                // G6PD activity - quantitative measurement (from dx)
 	bool CYP2D6;                     // Does the person have CYP2D6 phenotype? 0 = normal; 1 = low metabolizer
 
+	int PQ_stratum;									// 1 = stratum 1; 2 = stratum 2
 
 	////////////////////////////////////////////////////
 	//  4.1.1.4. Child-bearing age.
@@ -102,7 +103,7 @@ public:
 	double lam_bite_lag;             // Lagged force of infection due to moquito bites
 	vector<double> lam_bite_track;   // Tracking lagged force of infection due to moquito bites
 
-	double lam_rel_lag;              // Lagged force of infection due to relapses 
+	double lam_rel_lag;              // Lagged force of infection due to relapses
 	vector<double> lam_rel_track;    // Tracking lagged force of infection due to relapses
 
 	double lam_H_lag;                // Lagged total force of infection
@@ -119,12 +120,12 @@ public:
 	bool P;
 
 	/////////////////////////////////////////////////////////////////
-	//  4.1.1.6.  Number of batches of hypnozoites. Must be an integer. 
+	//  4.1.1.6.  Number of batches of hypnozoites. Must be an integer.
 
 	int Hyp;
 
 	////////////////////////////////////////////////////
-	// Indicator for competing hazards move 
+	// Indicator for competing hazards move
 
 	int CH_move;
 
@@ -134,8 +135,8 @@ public:
 
 	bool I_PCR_new;         // New PCR-detectable infection (I_LM, I_D & T included here)
 	bool I_LM_new;          // New LM-detectable infection (I_D & T included here)
-	bool I_D_new;           // New clinical episode (treated or untreated)  
-	bool CQ_treat;          // Indicator for chloroquine (or other blood-stage drug) treatment 
+	bool I_D_new;           // New clinical episode (treated or untreated)
+	bool CQ_treat;          // Indicator for chloroquine (or other blood-stage drug) treatment
 	bool PQ_treat;          // Indicator for primaquine treatment
 	bool TQ_treat;          // Indicator for tafenoquine treatment
 
@@ -144,16 +145,16 @@ public:
 	bool CQ_effective;     // Effective blood-stage treatment (PQ)
 
 	bool PQ_effective;     // Effective 8-aminoquinoline treatment (PQ)
-	bool PQ_overtreat;     // Over-treatment with 8-aminoquinolines (PQ) - defined as someone without hypnozoites being treated 
+	bool PQ_overtreat;     // Over-treatment with 8-aminoquinolines (PQ) - defined as someone without hypnozoites being treated
 	bool PQ_overtreat_9m;  // Over-treatment with 8-aminoquinolines (PQ) - defined as someone without BS infection in last 9 mths being treated
 
 	bool TQ_effective;     // Effective 8-aminoquinoline treatment (TQ)
-	bool TQ_overtreat;     // Over-treatment with 8-aminoquinolines (TQ) - defined as someone without hypnozoites being treated 
+	bool TQ_overtreat;     // Over-treatment with 8-aminoquinolines (TQ) - defined as someone without hypnozoites being treated
 	bool TQ_overtreat_9m;  // Over-treatment with 8-aminoquinolines (TQ) - defined as someone without BS infection in last 9 mths being treated
 
 
 	////////////////////////////////////////////////////
-	//  4.1.1.9.  Person-specific levels of immunity and indicators 
+	//  4.1.1.9.  Person-specific levels of immunity and indicators
 	//            for whether immunity is suppressed
 
 	double A_par;
@@ -177,8 +178,8 @@ public:
 	//
 	// Note that while there are 9 interventions in total, 2 of these are
 	// are related to first-line treatment. Therefore there are N_int = 6
-	// 'pulsed' interventions, i.e. those distributed by campaigns where 
-	// access will be an issue. 
+	// 'pulsed' interventions, i.e. those distributed by campaigns where
+	// access will be an issue.
 	//
 	// Of course there will be differential access to first-line treatment,
 	// but that's a story for another day.
@@ -222,6 +223,7 @@ public:
 	// STAT
 
 	double T_last_BS;         // Tracking of time since last PCR-detectable blood-stage infection
+	int T_last_Symp_BS;		  // Tracking of time since last LM-detectable blood-stage infection that prompted case management
 
 	///////////////////////////////////////////////////
 	// Individual-level effect of vector control
@@ -229,6 +231,19 @@ public:
 	double z_VC[N_mosq];      // probability of mosquito being repelled from this individual during a single feeding attempt
 	double y_VC[N_mosq];      // probability of mosquito feeding on this individual during a single attempt
 	double w_VC[N_mosq];      // probability of mosquito feeding and surviving on this individual during a single feeding attempt
+
+	//////////////////////////////////////////////////////////
+	// 4.1.1.11. Parameters for clinical trials
+	//
+	// These parameters govern the enrollment status of the
+	// individual if the clinical trial.
+
+	bool enrolled_in_trial;     // is the person currently enrolled in the trial?
+	int participant_ID;				// id of participant in trial
+	int enrollment_date;     // date on which the individual was enrolled in the trial
+	std::string trial_arm;     // indicates which arm of the trial the individual is enrolled in
+
+
 };
 
 #endif

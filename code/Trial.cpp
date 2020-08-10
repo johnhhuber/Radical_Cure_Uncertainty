@@ -36,8 +36,8 @@ void Trial::enrollParticipants(Population& POP, int curr_day)
   while((treatment_arm.size() < treatment_arm_sample_size || placebo_arm.size() < placebo_arm_sample_size) && itr_eligible != POP.people.end())
   {
     // check if we can enroll the person in the trial
-    // to be in the trial, need to have light-microscopy detectable infection and show up in the health system
-    if(!(itr_eligible->enrolled_in_trial) && (itr_eligible->participant_ID < 0) && (itr_eligible->T_last_Symp_BS == 0))
+    // to be in the trial, must meet age restrictions, need to have light-microscopy detectable infection, and show up in the health system
+    if((itr_eligible->age >= trial_PQ_lowage) && !(itr_eligible->enrolled_in_trial) && (itr_eligible->participant_ID < 0) && (itr_eligible->T_last_Symp_BS == 0))
     {
       std::string arm_allocation;
       // randomly allocate to treatment or placebo arms
@@ -81,7 +81,7 @@ void Trial::enrollParticipants(Population& POP, int curr_day)
       }
 
       // add participant to participant data structure
-      participant_data.insert(std::pair<int, std::tuple<string, int, double>>(itr_eligible->participant_ID, make_tuple(itr_eligible->trial_arm, itr_eligible->enrollment_date, itr_eligible->zeta_het)));
+      participant_data.insert(std::pair<int, std::tuple<string, int, double, double>>(itr_eligible->participant_ID, make_tuple(itr_eligible->trial_arm, itr_eligible->enrollment_date, itr_eligible->age, itr_eligible->zeta_het)));
 
       // create vector in map for recording trial data
       std::vector<std::tuple<int, bool>> individual_LM_recurrent_data;
@@ -277,35 +277,21 @@ void Trial::administerTreatment(Params &theta, Individual *trial_participant, in
 }
 
 
-void Trial::writeParticipantData(Population& POP)
+void Trial::writeParticipantData()
 {
   // open output file stream
   ofstream file_out;
   file_out.open(output_file_participants);
 
   // write the header
-  file_out << "Participant_ID," << "Trial_Arm," << "Enrollment_Date," << "Zeta_Het" << std::endl;
+  file_out << "Participant_ID," << "Trial_Arm," << "Enrollment_Date," << "Age," << "Zeta_Het" <<  std::endl;
 
   // write out the data
-  std::map<int, std::tuple<string, int, double>>::iterator itr_participants = participant_data.begin();
+  std::map<int, std::tuple<string, int, double, double>>::iterator itr_participants = participant_data.begin();
   for(; itr_participants != participant_data.end(); itr_participants++)
   {
-    file_out << itr_participants->first << "," << std::get<0>(itr_participants->second) << "," << std::get<1>(itr_participants->second) << "," << std::get<2>(itr_participants->second) << std::endl;
+    file_out << itr_participants->first << "," << std::get<0>(itr_participants->second) << "," << std::get<1>(itr_participants->second) << "," << std::get<2>(itr_participants->second) << "," << std::get<3>(itr_participants->second) << std::endl;
   }
-
-  // std::vector<int>::iterator itr_treatment = treatment_arm.begin();
-  // for(; itr_treatment != treatment_arm.end(); itr_treatment++)
-  // {
-  //   std::vector<Individual>::iterator participant = std::find_if(POP.people.begin(), POP.people.end(), [&](const Individual& indiv){return indiv.participant_ID == *itr_treatment;});
-  //   file_out << participant->participant_ID << "," << participant->trial_arm << "," << participant->enrollment_date << ',' << participant->zeta_het << std::endl;
-  // }
-  //
-  // std::vector<int>::iterator itr_placebo = placebo_arm.begin();
-  // for(; itr_placebo != placebo_arm.end(); itr_placebo++)
-  // {
-  //   std::vector<Individual>::iterator participant = std::find_if(POP.people.begin(), POP.people.end(), [&](const Individual& indiv){return indiv.participant_ID == *itr_placebo;});
-  //   file_out << participant->participant_ID << "," << participant->trial_arm << "," << participant->enrollment_date << ',' << participant->zeta_het << std::endl;
-  // }
   file_out.close();
 }
 
@@ -428,6 +414,10 @@ void Trial::readParamFile(std::string input_file)
     if(parameter_name == "trial_PQ_eff")
     {
       ss >> trial_PQ_eff;
+    }
+    if(parameter_name == "trial_PQ_lowage")
+    {
+      ss >> trial_PQ_lowage;
     }
     if(parameter_name.find("followup_date_") != string::npos)
     {

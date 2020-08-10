@@ -51,6 +51,7 @@ public:
   double dropout_rate; // probability of an individual dropping out of trial
 
   double trial_PQ_eff; // efficacy of PQ treatment in the trial
+  double trial_PQ_lowage; // lowest age of individuals that can be enrolled in the trial
 
   std::string output_file_participants;
   std::string output_file_trial;
@@ -59,7 +60,7 @@ public:
   std::map<int, std::vector<std::tuple<int, bool>>> record_LM_recurrent_infections;
   std::map<int, std::vector<std::tuple<int, string>>> record_all_recurrent_infections;
 
-  std::map<int, std::tuple<string, int, double>> participant_data;
+  std::map<int, std::tuple<string, int, double, double>> participant_data;
 
   // member functions
   void readParamFile(std::string);
@@ -68,7 +69,7 @@ public:
   void enrollParticipants(Population&, int); // function to enroll participants in the trial
   void updateParticipants(Population&, Params&, int); // function to update the status of the participants in the trial
   void administerTreatment(Params&, Individual *, int); // function to treatment individuals of the treatment and participant arm
-  void writeParticipantData(Population&);
+  void writeParticipantData();
   void writeTrialOutcomes();
   void writeAllRecurrentInfs();
 };

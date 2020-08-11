@@ -252,6 +252,7 @@ public:
 	bool enrolled_in_trial;     // is the person currently enrolled in the trial?
 	int participant_ID;				// id of participant in trial
 	int enrollment_date;     // date on which the individual was enrolled in the trial
+	int dropout_date;				 // date on which the individual dropped out of the trial
 	std::string trial_arm;     // indicates which arm of the trial the individual is enrolled in
 
 

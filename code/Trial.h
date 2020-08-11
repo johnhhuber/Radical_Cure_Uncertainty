@@ -60,7 +60,7 @@ public:
   std::map<int, std::vector<std::tuple<int, bool>>> record_LM_recurrent_infections;
   std::map<int, std::vector<std::tuple<int, string>>> record_all_recurrent_infections;
 
-  std::map<int, std::tuple<string, int, double, double>> participant_data;
+  std::map<int, std::tuple<string, int, int, double, double>> participant_data;
 
   // member functions
   void readParamFile(std::string);

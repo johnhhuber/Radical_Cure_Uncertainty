@@ -69,6 +69,7 @@ void Trial::enrollParticipants(Population& POP, int curr_day)
       itr_eligible->trial_arm = arm_allocation;
       itr_eligible->participant_ID = num_enrolled;
       itr_eligible->enrollment_date = curr_day;
+      itr_eligible->dropout_date = curr_day + trial_duration;
 
       // add to appropriate trial arm
       if(arm_allocation == "TREATMENT")
@@ -81,7 +82,7 @@ void Trial::enrollParticipants(Population& POP, int curr_day)
       }
 
       // add participant to participant data structure
-      participant_data.insert(std::pair<int, std::tuple<string, int, double, double>>(itr_eligible->participant_ID, make_tuple(itr_eligible->trial_arm, itr_eligible->enrollment_date, itr_eligible->age, itr_eligible->zeta_het)));
+      participant_data.insert(std::pair<int, std::tuple<string, int, int, double, double>>(itr_eligible->participant_ID, make_tuple(itr_eligible->trial_arm, itr_eligible->enrollment_date, itr_eligible->dropout_date, itr_eligible->age, itr_eligible->zeta_het)));
 
       // create vector in map for recording trial data
       std::vector<std::tuple<int, bool>> individual_LM_recurrent_data;
@@ -114,7 +115,9 @@ void Trial::updateParticipants(Population& POP, Params& theta, int curr_day)
   // the status of a LM-detectable recurrent infection
   for(itr_treatment_arm = treatment_arm.begin(); itr_treatment_arm != treatment_arm.end(); itr_treatment_arm++)
   {
+    // find the participant in the population
     std::vector<Individual>::iterator participant = std::find_if(POP.people.begin(), POP.people.end(), [&](const Individual& indiv){return indiv.participant_ID == *itr_treatment_arm;});
+
     // check that the participant is still enrolled in the trial
     if(participant->enrolled_in_trial)
     {
@@ -136,25 +139,52 @@ void Trial::updateParticipants(Population& POP, Params& theta, int curr_day)
       }
 
       // check whether the individual has a new recurrent infection and record if true
-      bool has_new_infection = (participant->I_PCR_new || participant->I_LM_new || participant->I_D_new);
+      bool has_new_infection = (participant->Reinfection_PCR_new || participant->Reinfection_LM_new || participant->Reinfection_D_new || participant->Relapse_PCR_new || participant->Relapse_LM_new || participant->Relapse_D_new);
       if(has_new_infection)
       {
         string infection_type;
-        // check if it is a symptomatic episode
-        if(participant->I_D_new)
+
+        if(participant->Reinfection_D_new || participant->Relapse_D_new)
         {
-          if(participant->CQ_treat)
+          // check if it is a symptomatic reinfection episode
+          if(participant->Reinfection_D_new)
           {
-            infection_type = "T";
-          }else{
-            infection_type = "D";
+            if(participant->CQ_treat)
+            {
+              infection_type = "REINFECTION_T";
+            }else{
+              infection_type = "REINFECTION_D";
+            }
+          }
+          // check if it is a symptomatic relapse episode
+          if(participant->Relapse_D_new)
+          {
+            if(participant->CQ_treat)
+            {
+              infection_type = "RELAPSE_T";
+            }else{
+              infection_type = "RELAPSE_D";
+            }
           }
         }else{
-          if(participant->I_LM_new)
+          if(participant->Reinfection_LM_new || participant->Reinfection_PCR_new)
           {
-            infection_type = "LM";
-          }else{
-            infection_type = "PCR";
+            if(participant->Reinfection_LM_new)
+            {
+              infection_type = "REINFECTION_LM";
+            }else{
+              infection_type = "REINFECTION_PCR";
+            }
+          }
+
+          if(participant->Relapse_LM_new || participant->Relapse_PCR_new)
+          {
+            if(participant->Relapse_LM_new)
+            {
+              infection_type = "RELAPSE_LM";
+            }else{
+              infection_type = "RELAPSE_PCR";
+            }
           }
         }
 
@@ -167,6 +197,18 @@ void Trial::updateParticipants(Population& POP, Params& theta, int curr_day)
       {
         participant->enrolled_in_trial = false;
       }
+
+      // simulate the dropout process
+      if(genunf(0.0, 1.0) < dropout_rate)
+      {
+        // disenroll from trial and update dropout date
+        participant->enrolled_in_trial = false;
+        participant->dropout_date = curr_day;
+
+        // update dropout date in participant data structure
+        std::get<2>(participant_data.find(participant->participant_ID)->second) = participant->dropout_date;
+
+      }
     }
   }
 
@@ -174,6 +216,7 @@ void Trial::updateParticipants(Population& POP, Params& theta, int curr_day)
   // this involves recording the status of a LM-detectable recurrent infection
   for(itr_placebo_arm = placebo_arm.begin(); itr_placebo_arm != placebo_arm.end(); itr_placebo_arm++)
   {
+    // find the participant in the population
     std::vector<Individual>::iterator participant = std::find_if(POP.people.begin(), POP.people.end(), [&](const Individual& indiv){return indiv.participant_ID == *itr_placebo_arm;});
 
     // check that the participant is still enrolled in the trial
@@ -197,25 +240,52 @@ void Trial::updateParticipants(Population& POP, Params& theta, int curr_day)
       }
 
       // check whether the individual has a new recurrent infection and record if true
-      bool has_new_infection = (participant->I_PCR_new || participant->I_LM_new || participant->I_D_new);
+      bool has_new_infection = (participant->Reinfection_PCR_new || participant->Reinfection_LM_new || participant->Reinfection_D_new || participant->Relapse_PCR_new || participant->Relapse_LM_new || participant->Relapse_D_new);
       if(has_new_infection)
       {
         string infection_type;
-        // check if it is a symptomatic episode
-        if(participant->I_D_new)
+
+        if(participant->Reinfection_D_new || participant->Relapse_D_new)
         {
-          if(participant->CQ_treat)
+          // check if it is a symptomatic reinfection episode
+          if(participant->Reinfection_D_new)
           {
-            infection_type = "T";
-          }else{
-            infection_type = "D";
+            if(participant->CQ_treat)
+            {
+              infection_type = "REINFECTION_T";
+            }else{
+              infection_type = "REINFECTION_D";
+            }
+          }
+          // check if it is a symptomatic relapse episode
+          if(participant->Relapse_D_new)
+          {
+            if(participant->CQ_treat)
+            {
+              infection_type = "RELAPSE_T";
+            }else{
+              infection_type = "RELAPSE_D";
+            }
           }
         }else{
-          if(participant->I_LM_new)
+          if(participant->Reinfection_LM_new || participant->Reinfection_PCR_new)
           {
-            infection_type = "LM";
-          }else{
-            infection_type = "PCR";
+            if(participant->Reinfection_LM_new)
+            {
+              infection_type = "REINFECTION_LM";
+            }else{
+              infection_type = "REINFECTION_PCR";
+            }
+          }
+
+          if(participant->Relapse_LM_new || participant->Relapse_PCR_new)
+          {
+            if(participant->Relapse_LM_new)
+            {
+              infection_type = "RELAPSE_LM";
+            }else{
+              infection_type = "RELAPSE_PCR";
+            }
           }
         }
 
@@ -226,6 +296,18 @@ void Trial::updateParticipants(Population& POP, Params& theta, int curr_day)
       if(days_since_enrollment == trial_duration)
       {
         participant->enrolled_in_trial = false;
+      }
+
+      // simulate the dropout process
+      if(genunf(0.0, 1.0) < dropout_rate)
+      {
+        // disenroll from trial and update dropout date
+        participant->enrolled_in_trial = false;
+        participant->dropout_date = curr_day;
+
+        // update dropout date in participant data structure
+        std::get<2>(participant_data.find(participant->participant_ID)->second) = participant->dropout_date;
+
       }
     }
   }
@@ -284,13 +366,13 @@ void Trial::writeParticipantData()
   file_out.open(output_file_participants);
 
   // write the header
-  file_out << "Participant_ID," << "Trial_Arm," << "Enrollment_Date," << "Age," << "Zeta_Het" <<  std::endl;
+  file_out << "Participant_ID," << "Trial_Arm," << "Enrollment_Date," << "Dropout_Date," << "Age," << "Zeta_Het" <<  std::endl;
 
   // write out the data
-  std::map<int, std::tuple<string, int, double, double>>::iterator itr_participants = participant_data.begin();
+  std::map<int, std::tuple<string, int, int, double, double>>::iterator itr_participants = participant_data.begin();
   for(; itr_participants != participant_data.end(); itr_participants++)
   {
-    file_out << itr_participants->first << "," << std::get<0>(itr_participants->second) << "," << std::get<1>(itr_participants->second) << "," << std::get<2>(itr_participants->second) << "," << std::get<3>(itr_participants->second) << std::endl;
+    file_out << itr_participants->first << "," << std::get<0>(itr_participants->second) << "," << std::get<1>(itr_participants->second) << "," << std::get<2>(itr_participants->second) << "," << std::get<3>(itr_participants->second) << "," << std::get<4>(itr_participants->second) << std::endl;
   }
   file_out.close();
 }

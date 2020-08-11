@@ -77,6 +77,14 @@ void Individual::state_mover(Params& theta, double lam_bite)
 	I_LM_new = 0;
 	I_D_new  = 0;
 
+	Relapse_PCR_new = 0;
+	Relapse_LM_new = 0;
+	Relapse_D_new = 0;
+
+	Reinfection_PCR_new = 0;
+	Reinfection_LM_new = 0;
+	Reinfection_D_new = 0;
+
 	CQ_treat = 0;
 	PQ_treat = 0;
 	TQ_treat = 0;
@@ -148,12 +156,16 @@ void Individual::state_mover(Params& theta, double lam_bite)
 
 			if (CH_move == 0)
 			{
+				// re-infection occurs
 				if (lam_bite_lag / lam_H_lag > genunf(0.0, 1.0))
 				{
 					if (AQ8_proph == 0)
 					{
 						Hyp = Hyp + 1;
 					}
+					Reinfection_PCR_new = 1;
+				}else{
+					Relapse_PCR_new = 1;
 				}
 
 				if (A_par_boost == 1)
@@ -185,12 +197,18 @@ void Individual::state_mover(Params& theta, double lam_bite)
 
 			if (CH_move == 1)
 			{
+				// reinfection occurs
 				if (lam_bite_lag / lam_H_lag > genunf(0.0, 1.0))
 				{
 					if (AQ8_proph == 0)
 					{
 						Hyp = Hyp + 1;
 					}
+					Reinfection_LM_new = 1;
+					Reinfection_PCR_new = 1;
+				}else{
+					Relapse_LM_new = 1;
+					Relapse_PCR_new = 1;
 				}
 
 				if (A_par_boost == 1)
@@ -223,12 +241,20 @@ void Individual::state_mover(Params& theta, double lam_bite)
 
 			if (CH_move == 2)
 			{
+				// reinfection occurs
 				if (lam_bite_lag / lam_H_lag > genunf(0.0, 1.0))
 				{
 					if (AQ8_proph == 0)
 					{
 						Hyp = Hyp + 1;
 					}
+					Reinfection_D_new = 1;
+					Reinfection_LM_new = 1;
+					Reinfection_PCR_new = 1;
+				}else{
+					Relapse_D_new = 1;
+					Relapse_LM_new = 1;
+					Relapse_PCR_new = 1;
 				}
 
 				if (A_par_boost == 1)
@@ -262,12 +288,20 @@ void Individual::state_mover(Params& theta, double lam_bite)
 
 			if (CH_move == 3)
 			{
+				// reinfection occurs
 				if (lam_bite_lag / lam_H_lag > genunf(0.0, 1.0))
 				{
 					if (AQ8_proph == 0)
 					{
 						Hyp = Hyp + 1;
 					}
+					Reinfection_D_new = 1;
+					Reinfection_LM_new = 1;
+					Reinfection_PCR_new = 1;
+				}else{
+					Relapse_D_new = 1;
+					Relapse_LM_new = 1;
+					Relapse_PCR_new = 1;
 				}
 
 				if (A_par_boost == 1)
@@ -339,12 +373,16 @@ void Individual::state_mover(Params& theta, double lam_bite)
 
 			if (CH_move == 1)
 			{
+				// reinfection occurs
 				if (lam_bite_lag / lam_H_lag > genunf(0.0, 1.0))
 				{
 					if (AQ8_proph == 0)
 					{
 						Hyp = Hyp + 1;
 					}
+					Reinfection_PCR_new = 1;
+				}else{
+					Relapse_PCR_new = 1;
 				}
 
 				if (A_par_boost == 1)
@@ -361,6 +399,8 @@ void Individual::state_mover(Params& theta, double lam_bite)
 					A_clin_boost = 0;
 				}
 
+				I_PCR_new = 1;
+
 				return;
 			}
 
@@ -369,12 +409,18 @@ void Individual::state_mover(Params& theta, double lam_bite)
 
 			if (CH_move == 2)
 			{
+				// reinfection occurs
 				if (lam_bite_lag / lam_H_lag > genunf(0.0, 1.0))
 				{
 					if (AQ8_proph == 0)
 					{
 						Hyp = Hyp + 1;
 					}
+					Reinfection_LM_new = 1;
+					Reinfection_PCR_new = 1;
+				}else{
+					Relapse_LM_new = 1;
+					Relapse_PCR_new = 1;
 				}
 
 				if (A_par_boost == 1)
@@ -406,12 +452,20 @@ void Individual::state_mover(Params& theta, double lam_bite)
 
 			if (CH_move == 3)
 			{
+				// reinfection occurs
 				if (lam_bite_lag / lam_H_lag > genunf(0.0, 1.0))
 				{
 					if (AQ8_proph == 0)
 					{
 						Hyp = Hyp + 1;
 					}
+					Reinfection_D_new = 1;
+					Reinfection_LM_new = 1;
+					Reinfection_PCR_new = 1;
+				}else{
+					Relapse_D_new = 1;
+					Relapse_LM_new = 1;
+					Relapse_PCR_new = 1;
 				}
 
 				if (A_par_boost == 1)
@@ -444,12 +498,20 @@ void Individual::state_mover(Params& theta, double lam_bite)
 
 			if (CH_move == 4)
 			{
+				// reinfection occurs
 				if (lam_bite_lag / lam_H_lag > genunf(0.0, 1.0))
 				{
 					if (AQ8_proph == 0)
 					{
 						Hyp = Hyp + 1;
 					}
+					Reinfection_D_new = 1;
+					Reinfection_LM_new = 1;
+					Reinfection_PCR_new = 1;
+				}else{
+					Relapse_D_new = 1;
+					Relapse_LM_new = 1;
+					Relapse_PCR_new = 1;
 				}
 
 				if (A_par_boost == 1)
@@ -522,12 +584,18 @@ void Individual::state_mover(Params& theta, double lam_bite)
 
 			if (CH_move == 1)
 			{
+				// reinfection occurs
 				if (lam_bite_lag / lam_H_lag > genunf(0.0, 1.0))
 				{
 					if (AQ8_proph == 0)
 					{
 						Hyp = Hyp + 1;
 					}
+					Reinfection_LM_new = 1;
+					Reinfection_PCR_new = 1;
+				}else{
+					Relapse_LM_new = 1;
+					Relapse_PCR_new = 1;
 				}
 
 				if (A_par_boost == 1)
@@ -544,6 +612,9 @@ void Individual::state_mover(Params& theta, double lam_bite)
 					A_clin_boost = 0;
 				}
 
+				I_LM_new = 1;
+				I_PCR_new = 1;
+
 				return;
 			}
 
@@ -553,12 +624,20 @@ void Individual::state_mover(Params& theta, double lam_bite)
 
 			if (CH_move == 2)
 			{
+				// reinfection event occurs
 				if (lam_bite_lag / lam_H_lag > genunf(0.0, 1.0))
 				{
 					if (AQ8_proph == 0)
 					{
 						Hyp = Hyp + 1;
 					}
+					Reinfection_D_new = 1;
+					Reinfection_LM_new = 1;
+					Reinfection_PCR_new = 1;
+				}else{
+					Relapse_D_new = 1;
+					Relapse_LM_new = 1;
+					Relapse_PCR_new = 1;
 				}
 
 				if (A_par_boost == 1)
@@ -591,12 +670,20 @@ void Individual::state_mover(Params& theta, double lam_bite)
 
 			if (CH_move == 3)
 			{
+				// reinfection occurs
 				if (lam_bite_lag / lam_H_lag > genunf(0.0, 1.0))
 				{
 					if (AQ8_proph == 0)
 					{
 						Hyp = Hyp + 1;
 					}
+					Reinfection_D_new = 1;
+					Reinfection_LM_new = 1;
+					Reinfection_PCR_new = 1;
+				}else{
+					Relapse_D_new = 1;
+					Relapse_LM_new = 1;
+					Relapse_PCR_new = 1;
 				}
 
 				if (A_par_boost == 1)
@@ -659,12 +746,20 @@ void Individual::state_mover(Params& theta, double lam_bite)
 
 			if (CH_move == 1)
 			{
+				// reinfection occurs
 				if (lam_bite_lag / lam_H_lag > genunf(0.0, 1.0))
 				{
 					if (AQ8_proph == 0)
 					{
 						Hyp = Hyp + 1;
 					}
+					Reinfection_D_new = 1;
+					Reinfection_LM_new = 1;
+					Reinfection_PCR_new = 1;
+				}else{
+					Relapse_D_new = 1;
+					Relapse_LM_new = 1;
+					Relapse_PCR_new = 1;
 				}
 
 				if (A_par_boost == 1)
@@ -680,6 +775,10 @@ void Individual::state_mover(Params& theta, double lam_bite)
 					A_clin_timer = theta.u_clin;
 					A_clin_boost = 0;
 				}
+
+				I_D_new = 1;
+				I_PCR_new = 1;
+				I_LM_new = 1;
 
 				return;
 			}
@@ -726,6 +825,7 @@ void Individual::state_mover(Params& theta, double lam_bite)
 
 			if (CH_move == 1)
 			{
+				// reinfection occurs
 				if (lam_bite_lag / lam_H_lag > genunf(0.0, 1.0))
 				{
 					if (AQ8_proph == 0)
@@ -965,7 +1065,7 @@ void Individual::ager(Params& theta)
 		T_last_BS = T_last_BS + 1.0;
 	}
 
-	// time since onset of last blood-stage infection 
+	// time since onset of last blood-stage infection
 	T_last_Symp_BS++;
 }
 

@@ -47,6 +47,9 @@ public:
 	}
 
 
+	// destructor
+	~Individual(){};
+
 	////////////////////////////////////////////////////
 	// Copy and move constructors
 
@@ -136,6 +139,14 @@ public:
 	bool I_PCR_new;         // New PCR-detectable infection (I_LM, I_D & T included here)
 	bool I_LM_new;          // New LM-detectable infection (I_D & T included here)
 	bool I_D_new;           // New clinical episode (treated or untreated)
+
+	bool Relapse_PCR_new;         // New PCR-detectable relapse
+	bool Reinfection_PCR_new;			// New PCR-detectable reinfection
+	bool Relapse_LM_new;					// New LM-detectable relapse
+	bool Reinfection_LM_new;			// New LM-detectable reinfection
+	bool Relapse_D_new;						// New clinical relapse episode
+	bool Reinfection_D_new;				// New clinical reinfection episode
+
 	bool CQ_treat;          // Indicator for chloroquine (or other blood-stage drug) treatment
 	bool PQ_treat;          // Indicator for primaquine treatment
 	bool TQ_treat;          // Indicator for tafenoquine treatment

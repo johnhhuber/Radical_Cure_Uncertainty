@@ -1085,7 +1085,7 @@ void Individual::case_management(Params& theta)
 	/////////////////////////////////////////////////////////////////////
 	// Baseline treatment regimen: chloroquine
 
-	if (theta.CM_regimen == 0)
+	if (theta.CM_regimen == 0 & !enrolled_in_trial)
 	{
 		CQ_treat = 1;
 

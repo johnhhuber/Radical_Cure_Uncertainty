@@ -50,7 +50,10 @@ public:
 
   double dropout_rate; // probability of an individual dropping out of trial
 
-  double trial_PQ_eff; // efficacy of PQ treatment in the trial
+  double trial_PQ_eff_stratum_1; // efficacy of PQ treatment in the trial for stratum 1
+  double trial_PQ_eff_stratum_2; // efficacy of PQ treatment in the trial for stratum 2
+  double trial_PQ_prop_stratum_1; // proportion of individuals belonging to stratum 1
+  double trial_PQ_prop_stratum_2; // proportion of individuals belonging to stratum 2 
   double trial_PQ_lowage; // lowest age of individuals that can be enrolled in the trial
 
   std::string output_file_participants;

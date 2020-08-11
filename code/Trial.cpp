@@ -46,6 +46,7 @@ void Trial::enrollParticipants(Population& POP, int curr_day)
         if(treatment_arm.size() < treatment_arm_sample_size)
         {
           arm_allocation = "TREATMENT";
+
         }else{
           arm_allocation = "PLACEBO";
         }
@@ -70,6 +71,17 @@ void Trial::enrollParticipants(Population& POP, int curr_day)
       itr_eligible->participant_ID = num_enrolled;
       itr_eligible->enrollment_date = curr_day;
       itr_eligible->dropout_date = curr_day + trial_duration;
+
+      // if in treatment arm, add in information about PQ stratum
+      if(arm_allocation == "TREATMENT")
+      {
+        if(genunf(0.0, 1.0) < trial_PQ_prop_stratum_1)
+        {
+          itr_eligible->PQ_stratum = 1;
+        }else{
+          itr_eligible->PQ_stratum = 2;
+        }
+      }
 
       // add to appropriate trial arm
       if(arm_allocation == "TREATMENT")
@@ -321,37 +333,48 @@ void Trial::administerTreatment(Params &theta, Individual *trial_participant, in
   {
     if(trial_participant->trial_arm == "TREATMENT" && trial_participant->enrolled_in_trial)
     {
-      // randomly draw whether individual receives effective PQ treatment
-      if(genunf(0.0, 1.0) < trial_PQ_eff)
+      // account for effects of PQ on hypnozoites and prophylaxis
+      if(trial_participant->PQ_stratum == 1)
       {
-        // account for effects of PQ on hypnozoites and prophylaxis
-        trial_participant->Hyp = 0;
-        trial_participant->AQ8_proph = 1;
-        trial_participant->AQ8_proph_timer = theta.CM_PQ_proph;
+        trial_participant->Hyp -= ignbin(trial_participant->Hyp, trial_PQ_eff_stratum_1);
 
         // clear developing hypnozoites
         for(int z = 0; z < trial_participant->lam_bite_track.size(); z++)
         {
-          trial_participant->lam_bite_track[z] = 0.0;
+          trial_participant->lam_bite_track[z] *= (1 - trial_PQ_eff_stratum_1);
         }
         for(int z = 0; z < trial_participant->lam_rel_track.size(); z++)
         {
-          trial_participant->lam_rel_track[z] = 0.0;
+          trial_participant->lam_rel_track[z] *= (1 - trial_PQ_eff_stratum_1);
         }
+      }else{
+        trial_participant->Hyp -= ignbin(trial_participant->Hyp, trial_PQ_eff_stratum_2);
 
-        // PQ can improve efficacy of CQ, so account for this effect in clearance
-        // of BS infection
-        if(trial_participant->I_LM)
+        // clear developing hypnozoites
+        for(int z = 0; z < trial_participant->lam_bite_track.size(); z++)
         {
-          if(genunf(0.0, 1.0) < theta.CM_CQ_eff_wPQ)
-          {
-            trial_participant->S     = 0;
-            trial_participant->I_PCR = 0;
-            trial_participant->I_LM  = 0;
-            trial_participant->I_D   = 0;
-            trial_participant->T     = 1;
-            trial_participant->P     = 0;
-          }
+          trial_participant->lam_bite_track[z] *= (1 - trial_PQ_eff_stratum_2);
+        }
+        for(int z = 0; z < trial_participant->lam_rel_track.size(); z++)
+        {
+          trial_participant->lam_rel_track[z] *= (1 - trial_PQ_eff_stratum_2);
+        }
+      }
+      trial_participant->AQ8_proph = 1;
+      trial_participant->AQ8_proph_timer = theta.CM_PQ_proph;
+
+      // PQ can improve efficacy of CQ, so account for this effect in clearance
+      // of BS infection
+      if(trial_participant->I_LM)
+      {
+        if(genunf(0.0, 1.0) < theta.CM_CQ_eff_wPQ)
+        {
+          trial_participant->S     = 0;
+          trial_participant->I_PCR = 0;
+          trial_participant->I_LM  = 0;
+          trial_participant->I_D   = 0;
+          trial_participant->T     = 1;
+          trial_participant->P     = 0;
         }
       }
     }
@@ -493,9 +516,21 @@ void Trial::readParamFile(std::string input_file)
     {
       ss >> dropout_rate;
     }
-    if(parameter_name == "trial_PQ_eff")
+    if(parameter_name == "trial_PQ_eff_stratum_1")
     {
-      ss >> trial_PQ_eff;
+      ss >> trial_PQ_eff_stratum_1;
+    }
+    if(parameter_name == "trial_PQ_eff_stratum_2")
+    {
+      ss >> trial_PQ_eff_stratum_2;
+    }
+    if(parameter_name == "trial_PQ_prop_stratum_1")
+    {
+      ss >> trial_PQ_prop_stratum_1;
+    }
+    if(parameter_name == "trial_PQ_prop_stratum_2")
+    {
+      ss >> trial_PQ_prop_stratum_2;
     }
     if(parameter_name == "trial_PQ_lowage")
     {

@@ -111,7 +111,7 @@ int main(int argc, char** argv)
 	std::string output_File_Recurrent = argv[5 + N_mosq];
 	std::string output_File_Trial = argv[6 + N_mosq];
 
-	int seed = std::stoi(argv[7 + N_mosq]);
+	int seed = std::stoi(argv[7 + N_mosq]) + 1;
 	setall(seed, seed);
 
 
@@ -220,6 +220,7 @@ int main(int argc, char** argv)
 	cout << "Starting model simulations......." << endl;
 
 	BRAZ_sim.runTrial(Pv_mod_par, BRAZ_pop, BRAZ_intven, BRAZ_trial);
+	// BRAZ_sim.run(Pv_mod_par, BRAZ_pop, BRAZ_intven);
 
 	cout << "Model simulations completed....." << endl;
 	cout << endl;

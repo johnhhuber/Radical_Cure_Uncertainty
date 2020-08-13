@@ -97,10 +97,10 @@ void Trial::enrollParticipants(Population& POP, int curr_day)
       participant_data.insert(std::pair<int, std::tuple<string, int, int, double, double, int, int>>(itr_eligible->participant_ID, make_tuple(itr_eligible->trial_arm, itr_eligible->enrollment_date, itr_eligible->dropout_date, itr_eligible->age, itr_eligible->zeta_het, itr_eligible->Hyp, itr_eligible->Hyp)));
 
       // create vector in map for recording trial data
-      std::vector<std::tuple<int, bool>> individual_LM_recurrent_data;
+      std::vector<std::tuple<int, bool, bool>> individual_LM_recurrent_data;
       std::vector<std::tuple<int, string>> individual_all_recurrent_data;
 
-      record_LM_recurrent_infections.insert(std::pair<int, std::vector<std::tuple<int, bool>>>(itr_eligible->participant_ID, individual_LM_recurrent_data));
+      record_LM_recurrent_infections.insert(std::pair<int, std::vector<std::tuple<int, bool, bool>>>(itr_eligible->participant_ID, individual_LM_recurrent_data));
       record_all_recurrent_infections.insert(std::pair<int, std::vector<std::tuple<int, string>>>(itr_eligible->participant_ID, individual_all_recurrent_data));
     }
 
@@ -140,11 +140,12 @@ void Trial::updateParticipants(Population& POP, Params& theta, int curr_day)
       bool is_followup_date = (std::find(trial_followup_dates.begin(), trial_followup_dates.end(), days_since_enrollment) != trial_followup_dates.end());
       if(is_followup_date)
       {
-        // record whether or not the individual has LM-detectable infection
+        // record whether or not the individual has LM-detectable or PCR-detectable infection
         bool has_LM_infection = (participant->I_LM || participant->I_D || participant->T);
+        bool has_PCR_infection = participant->I_PCR || has_LM_infection;
 
         // record status of recurrent infection
-        record_LM_recurrent_infections.find(participant->participant_ID)->second.push_back(make_tuple(days_since_enrollment, has_LM_infection));
+        record_LM_recurrent_infections.find(participant->participant_ID)->second.push_back(make_tuple(days_since_enrollment, has_LM_infection, has_PCR_infection));
 
         // adminster treatment if necessary
         administerTreatment(theta, &(*participant), days_since_enrollment);
@@ -243,9 +244,10 @@ void Trial::updateParticipants(Population& POP, Params& theta, int curr_day)
       {
         // record whether or not the individual has LM-detectable infection
         bool has_LM_infection = (participant->I_LM || participant->I_D || participant->T);
+        bool has_PCR_infection = participant->I_PCR || has_LM_infection;
 
         // record status of recurrent infection
-        record_LM_recurrent_infections.find(participant->participant_ID)->second.push_back(make_tuple(days_since_enrollment, has_LM_infection));
+        record_LM_recurrent_infections.find(participant->participant_ID)->second.push_back(make_tuple(days_since_enrollment, has_LM_infection, has_PCR_infection));
 
         // adminster treatment if necessary
         administerTreatment(theta, &(*participant), days_since_enrollment);
@@ -413,16 +415,16 @@ void Trial::writeTrialOutcomes()
   file_out.open(output_file_trial);
 
   // write the header
-  file_out << "Participant_ID," << "Days_Since_Enrollment," << "LM_Infection" << endl;
+  file_out << "Participant_ID," << "Days_Since_Enrollment," << "LM_Infection," << "PCR_Infection" << endl;
 
   // write out the data
-  std::map<int, std::vector<std::tuple<int, bool>>>::iterator itr_trial = record_LM_recurrent_infections.begin();
+  std::map<int, std::vector<std::tuple<int, bool, bool>>>::iterator itr_trial = record_LM_recurrent_infections.begin();
   for(; itr_trial != record_LM_recurrent_infections.end(); itr_trial++)
   {
-    std::vector<std::tuple<int, bool>>::iterator itr_followup_stat = itr_trial->second.begin();
+    std::vector<std::tuple<int, bool, bool>>::iterator itr_followup_stat = itr_trial->second.begin();
     for(; itr_followup_stat != itr_trial->second.end(); itr_followup_stat++)
     {
-      file_out << itr_trial->first << "," << std::get<0>(*itr_followup_stat) << ',' << std::get<1>(*itr_followup_stat) << std::endl;
+      file_out << itr_trial->first << "," << std::get<0>(*itr_followup_stat) << ',' << std::get<1>(*itr_followup_stat) << ',' << std::get<2>(*itr_followup_stat) << std::endl;
     }
   }
   file_out.close();

@@ -60,7 +60,7 @@ public:
   std::string output_file_trial;
   std::string output_file_recurrent_infs;
 
-  std::map<int, std::vector<std::tuple<int, bool>>> record_LM_recurrent_infections;
+  std::map<int, std::vector<std::tuple<int, bool, bool>>> record_LM_recurrent_infections;
   std::map<int, std::vector<std::tuple<int, string>>> record_all_recurrent_infections;
 
   std::map<int, std::tuple<string, int, int, double, double, int, int>> participant_data;

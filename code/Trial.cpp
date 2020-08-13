@@ -94,7 +94,7 @@ void Trial::enrollParticipants(Population& POP, int curr_day)
       }
 
       // add participant to participant data structure
-      participant_data.insert(std::pair<int, std::tuple<string, int, int, double, double>>(itr_eligible->participant_ID, make_tuple(itr_eligible->trial_arm, itr_eligible->enrollment_date, itr_eligible->dropout_date, itr_eligible->age, itr_eligible->zeta_het)));
+      participant_data.insert(std::pair<int, std::tuple<string, int, int, double, double, int, int>>(itr_eligible->participant_ID, make_tuple(itr_eligible->trial_arm, itr_eligible->enrollment_date, itr_eligible->dropout_date, itr_eligible->age, itr_eligible->zeta_het, itr_eligible->Hyp, itr_eligible->Hyp)));
 
       // create vector in map for recording trial data
       std::vector<std::tuple<int, bool>> individual_LM_recurrent_data;
@@ -378,6 +378,10 @@ void Trial::administerTreatment(Params &theta, Individual *trial_participant, in
         }
       }
     }
+
+    // record the number of hypnozoites following treatment
+    std::get<6>(participant_data.find(trial_participant->participant_ID)->second) = trial_participant->Hyp;
+
   }
 }
 
@@ -389,13 +393,13 @@ void Trial::writeParticipantData()
   file_out.open(output_file_participants);
 
   // write the header
-  file_out << "Participant_ID," << "Trial_Arm," << "Enrollment_Date," << "Dropout_Date," << "Age," << "Zeta_Het" <<  std::endl;
+  file_out << "Participant_ID," << "Trial_Arm," << "Enrollment_Date," << "Dropout_Date," << "Age," << "Zeta_Het," << "Hyp_Pre," << "Hyp_Post" <<  std::endl;
 
   // write out the data
-  std::map<int, std::tuple<string, int, int, double, double>>::iterator itr_participants = participant_data.begin();
+  std::map<int, std::tuple<string, int, int, double, double, int, int>>::iterator itr_participants = participant_data.begin();
   for(; itr_participants != participant_data.end(); itr_participants++)
   {
-    file_out << itr_participants->first << "," << std::get<0>(itr_participants->second) << "," << std::get<1>(itr_participants->second) << "," << std::get<2>(itr_participants->second) << "," << std::get<3>(itr_participants->second) << "," << std::get<4>(itr_participants->second) << std::endl;
+    file_out << itr_participants->first << "," << std::get<0>(itr_participants->second) << "," << std::get<1>(itr_participants->second) << "," << std::get<2>(itr_participants->second) << "," << std::get<3>(itr_participants->second) << "," << std::get<4>(itr_participants->second) << "," << std::get<5>(itr_participants->second) << "," << std::get<6>(itr_participants->second) << std::endl;
   }
   file_out.close();
 }

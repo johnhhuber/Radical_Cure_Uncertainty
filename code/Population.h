@@ -38,6 +38,12 @@ public:
 	//  5.1.1.1.  Class member functions                                    //
 	//////////////////////////////////////////////////////////////////////////
 
+	// constructor
+	Population(){};
+
+	// destructor
+  ~Population(){};
+
 	////////////////////////////////////////////////////
 	// Initialise a population of individuals at equilibrium
 
@@ -57,6 +63,10 @@ public:
 	// Summarise population outputs
 
 	void summary();
+
+	/////////////////////////////////////////////////////
+	// return PvPR_PCR
+	double getPvPR(Params& theta);
 
 
 private:
@@ -178,23 +188,14 @@ public:
 	// Equilibrium vectors
 
 	vector<vector<vector<vector<vector<double>>>>> yH_eq;
-	// double yH_eq[N_gen][N_age][N_het][K_max + 1][N_H_comp];
 	vector<vector<vector<double>>> lam_eq;
-	// double lam_eq[N_gen][N_age][N_het];
 	vector<vector<vector<vector<double>>>> A_par_eq;
-	// double A_par_eq[N_gen][N_age][N_het][K_max+1];
 	vector<vector<vector<double>>> A_par_eq_mean;
-	// double A_par_eq_mean[N_gen][N_age][N_het];
 	vector<vector<vector<vector<double>>>> A_clin_eq;
-	// double A_clin_eq[N_gen][N_age][N_het][K_max+1];
 	vector<vector<vector<double>>> A_clin_eq_mean;
-	// double A_clin_eq_mean[N_gen][N_age][N_het];
 	vector<vector<vector<vector<double>>>> phi_LM_eq;
-	// double phi_LM_eq[N_gen][N_age][N_het][K_max+1];
 	vector<vector<vector<vector<double>>>> phi_D_eq;
-	// double phi_D_eq[N_gen][N_age][N_het][K_max+1];
 	vector<vector<vector<vector<double>>>> r_PCR_eq;
-	// double r_PCR_eq[N_gen][N_age][N_het][K_max+1];
 
 	vector<vector<vector<vector<double>>>> yH_eq_cumsum;
 

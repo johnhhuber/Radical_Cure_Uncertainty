@@ -3233,3 +3233,27 @@ void Population::ind_at_equil(Params& theta)
 	cout << "P = " << ((double)P_ind) / N_pop << "\t" << P_eqq << endl;
 	cout << endl;
 }
+
+double Population::getPvPR(Params& theta)
+{
+	/////////////////////////////
+	// Prevalence estiamtes
+
+	double PvPR_PCR_pop = 0.0;
+
+	for (int g = 0; g < N_gen; g++)
+	{
+		for (int i = 0; i < N_age; i++)
+		{
+			for (int j = 0; j < N_het; j++)
+			{
+				for (int k = 0; k < (K_max + 1); k++)
+				{
+					PvPR_PCR_pop = PvPR_PCR_pop + yH_eq[g][i][j][k][1] + yH_eq[g][i][j][k][2] + yH_eq[g][i][j][k][3] + yH_eq[g][i][j][k][4];
+				}
+			}
+		}
+	}
+
+	return PvPR_PCR_pop;
+}

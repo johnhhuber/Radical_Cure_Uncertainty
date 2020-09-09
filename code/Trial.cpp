@@ -35,9 +35,12 @@ void Trial::enrollParticipants(Population& POP, int curr_day)
   // loop through population and look to enroll participants
   while((treatment_arm.size() < treatment_arm_sample_size || placebo_arm.size() < placebo_arm_sample_size) && itr_eligible != POP.people.end())
   {
+    // perform G6PD test 
+    double G6PD_read = G6PD_SD_BioSensor(itr_eligible->G6PD_activity);
+
     // check if we can enroll the person in the trial
     // to be in the trial, must meet age restrictions, need to have light-microscopy detectable infection, and show up in the health system
-    if((itr_eligible->age >= trial_PQ_lowage) && !(itr_eligible->enrolled_in_trial) && (itr_eligible->participant_ID < 0) && (itr_eligible->T_last_Symp_BS == 0))
+    if((itr_eligible->age >= trial_PQ_lowage) && !(itr_eligible->enrolled_in_trial) && (itr_eligible->participant_ID < 0) && (itr_eligible->T_last_Symp_BS == 0) && (G6PD_read > G6PD_activity_threshold)) 
     {
       std::string arm_allocation;
       // randomly allocate to treatment or placebo arms
@@ -71,6 +74,7 @@ void Trial::enrollParticipants(Population& POP, int curr_day)
       itr_eligible->participant_ID = num_enrolled;
       itr_eligible->enrollment_date = curr_day;
       itr_eligible->dropout_date = curr_day + trial_duration;
+      itr_eligible->G6PD_read = G6PD_read;
 
       // if in treatment arm, add in information about PQ stratum
       if(arm_allocation == "TREATMENT")
@@ -94,7 +98,8 @@ void Trial::enrollParticipants(Population& POP, int curr_day)
       }
 
       // add participant to participant data structure
-      participant_data.insert(std::pair<int, std::tuple<string, int, int, double, double, int, int>>(itr_eligible->participant_ID, make_tuple(itr_eligible->trial_arm, itr_eligible->enrollment_date, itr_eligible->dropout_date, itr_eligible->age, itr_eligible->zeta_het, itr_eligible->Hyp, itr_eligible->Hyp)));
+      int total_hyp = itr_eligible->Hyp_Pre_Enrollment + itr_eligible->Hyp_Post_Enrollment;
+      participant_data.insert(std::pair<int, std::tuple<string, int, int, double, double, double, int, int>>(itr_eligible->participant_ID, make_tuple(itr_eligible->trial_arm, itr_eligible->enrollment_date, itr_eligible->dropout_date, itr_eligible->age, itr_eligible->zeta_het, itr_eligible->G6PD_read, total_hyp, total_hyp)));
 
       // create vector in map for recording trial data
       std::vector<std::tuple<int, bool, bool>> individual_LM_recurrent_data;
@@ -174,9 +179,19 @@ void Trial::updateParticipants(Population& POP, Params& theta, int curr_day)
           {
             if(participant->CQ_treat)
             {
-              infection_type = "RELAPSE_T";
+              if(participant->Relapse_Pre_Enrollment)
+              {
+                infection_type = "RELAPSE_T_PRE_ENROLLMENT";
+              }else{
+                infection_type = "RELAPSE_T_POST_ENROLLMENT";
+              }
             }else{
-              infection_type = "RELAPSE_D";
+              if(participant->Relapse_Pre_Enrollment)
+              {
+                infection_type = "RELAPSE_D_PRE_ENROLLMENT";
+              }else{
+                infection_type = "RELAPSE_D_POST_ENROLLMENT";
+              }
             }
           }
         }else{
@@ -194,9 +209,19 @@ void Trial::updateParticipants(Population& POP, Params& theta, int curr_day)
           {
             if(participant->Relapse_LM_new)
             {
-              infection_type = "RELAPSE_LM";
+              if(participant->Relapse_Pre_Enrollment)
+              {
+                infection_type = "RELAPSE_LM_PRE_ENROLLMENT";
+              }else{
+                infection_type = "RELAPSE_LM_POST_ENROLLMENT";
+              }
             }else{
-              infection_type = "RELAPSE_PCR";
+              if(participant->Relapse_Pre_Enrollment)
+              {
+                infection_type = "RELAPSE_PCR_PRE_ENROLLMENT";
+              }else{
+                infection_type = "RELAPSE_PCR_POST_ENROLLMENT";
+              }
             }
           }
         }
@@ -276,9 +301,19 @@ void Trial::updateParticipants(Population& POP, Params& theta, int curr_day)
           {
             if(participant->CQ_treat)
             {
-              infection_type = "RELAPSE_T";
+              if(participant->Relapse_Pre_Enrollment)
+              {
+                infection_type = "RELAPSE_T_PRE_ENROLLMENT";
+              }else{
+                infection_type = "RELAPSE_T_POST_ENROLLMENT";
+              }
             }else{
-              infection_type = "RELAPSE_D";
+              if(participant->Relapse_Pre_Enrollment)
+              {
+                infection_type = "RELAPSE_D_PRE_ENROLLMENT";
+              }else{
+                infection_type = "RELAPSE_D_POST_ENROLLMENT";
+              }
             }
           }
         }else{
@@ -296,9 +331,19 @@ void Trial::updateParticipants(Population& POP, Params& theta, int curr_day)
           {
             if(participant->Relapse_LM_new)
             {
-              infection_type = "RELAPSE_LM";
+              if(participant->Relapse_Pre_Enrollment)
+              {
+                infection_type = "RELAPSE_LM_PRE_ENROLLMENT";
+              }else{
+                infection_type = "RELAPSE_LM_POST_ENROLLMENT";
+              }
             }else{
-              infection_type = "RELAPSE_PCR";
+              if(participant->Relapse_Pre_Enrollment)
+              {
+                infection_type = "RELAPSE_PCR_PRE_ENROLLMENT";
+              }else{
+                infection_type = "RELAPSE_PCR_POST_ENROLLMENT";
+              }
             }
           }
         }
@@ -338,32 +383,42 @@ void Trial::administerTreatment(Params &theta, Individual *trial_participant, in
       // account for effects of PQ on hypnozoites and prophylaxis
       if(trial_participant->PQ_stratum == 1)
       {
-        trial_participant->Hyp -= ignbin(trial_participant->Hyp, trial_PQ_eff_stratum_1);
+        trial_participant->Hyp_Pre_Enrollment -= ignbin(trial_participant->Hyp_Pre_Enrollment, trial_PQ_eff_stratum_1);
+        trial_participant->Hyp_Post_Enrollment -= ignbin(trial_participant->Hyp_Post_Enrollment, trial_PQ_eff_stratum_1);
 
         // clear developing hypnozoites
         for(int z = 0; z < trial_participant->lam_bite_track.size(); z++)
         {
-          trial_participant->lam_bite_track[z] *= (1 - trial_PQ_eff_stratum_1);
+          // trial_participant->lam_bite_track[z] *= (1 - trial_PQ_eff_stratum_1);
+          trial_participant->lam_bite_track[z] = 0.0;
         }
         for(int z = 0; z < trial_participant->lam_rel_track.size(); z++)
         {
-          trial_participant->lam_rel_track[z] *= (1 - trial_PQ_eff_stratum_1);
+          // trial_participant->lam_rel_track[z] *= (1 - trial_PQ_eff_stratum_1);
+          trial_participant->lam_rel_track[z] = (trial_participant->Hyp_Pre_Enrollment + trial_participant->Hyp_Post_Enrollment) * 1.0;
         }
       }else{
-        trial_participant->Hyp -= ignbin(trial_participant->Hyp, trial_PQ_eff_stratum_2);
+        trial_participant->Hyp_Pre_Enrollment -= ignbin(trial_participant->Hyp_Pre_Enrollment, trial_PQ_eff_stratum_2);
+        trial_participant->Hyp_Post_Enrollment -= ignbin(trial_participant->Hyp_Post_Enrollment, trial_PQ_eff_stratum_2);
 
         // clear developing hypnozoites
         for(int z = 0; z < trial_participant->lam_bite_track.size(); z++)
         {
-          trial_participant->lam_bite_track[z] *= (1 - trial_PQ_eff_stratum_2);
+          // trial_participant->lam_bite_track[z] *= (1 - trial_PQ_eff_stratum_2);
+          trial_participant->lam_bite_track[z] = 0.0;
         }
         for(int z = 0; z < trial_participant->lam_rel_track.size(); z++)
         {
-          trial_participant->lam_rel_track[z] *= (1 - trial_PQ_eff_stratum_2);
+          // trial_participant->lam_rel_track[z] *= (1 - trial_PQ_eff_stratum_2);
+          trial_participant->lam_rel_track[z] = (trial_participant->Hyp_Pre_Enrollment + trial_participant->Hyp_Post_Enrollment) * 1.0;
         }
       }
-      trial_participant->AQ8_proph = 1;
-      trial_participant->AQ8_proph_timer = theta.CM_PQ_proph;
+
+      if(theta.CM_PQ_proph > 0)
+      {
+        trial_participant->AQ8_proph = 1;
+        trial_participant->AQ8_proph_timer = theta.CM_PQ_proph;
+      }
 
       // PQ can improve efficacy of CQ, so account for this effect in clearance
       // of BS infection
@@ -382,7 +437,7 @@ void Trial::administerTreatment(Params &theta, Individual *trial_participant, in
     }
 
     // record the number of hypnozoites following treatment
-    std::get<6>(participant_data.find(trial_participant->participant_ID)->second) = trial_participant->Hyp;
+    std::get<7>(participant_data.find(trial_participant->participant_ID)->second) = trial_participant->Hyp_Pre_Enrollment + trial_participant->Hyp_Post_Enrollment;
 
   }
 }
@@ -395,13 +450,13 @@ void Trial::writeParticipantData()
   file_out.open(output_file_participants);
 
   // write the header
-  file_out << "Participant_ID," << "Trial_Arm," << "Enrollment_Date," << "Dropout_Date," << "Age," << "Zeta_Het," << "Hyp_Pre," << "Hyp_Post" <<  std::endl;
+  file_out << "Participant_ID," << "Trial_Arm," << "Enrollment_Date," << "Dropout_Date," << "Age," << "Zeta_Het," << "G6PD_reading," << "Hyp_Pre," << "Hyp_Post" <<  std::endl;
 
   // write out the data
-  std::map<int, std::tuple<string, int, int, double, double, int, int>>::iterator itr_participants = participant_data.begin();
+  std::map<int, std::tuple<string, int, int, double, double, double, int, int>>::iterator itr_participants = participant_data.begin();
   for(; itr_participants != participant_data.end(); itr_participants++)
   {
-    file_out << itr_participants->first << "," << std::get<0>(itr_participants->second) << "," << std::get<1>(itr_participants->second) << "," << std::get<2>(itr_participants->second) << "," << std::get<3>(itr_participants->second) << "," << std::get<4>(itr_participants->second) << "," << std::get<5>(itr_participants->second) << "," << std::get<6>(itr_participants->second) << std::endl;
+    file_out << itr_participants->first << "," << std::get<0>(itr_participants->second) << "," << std::get<1>(itr_participants->second) << "," << std::get<2>(itr_participants->second) << "," << std::get<3>(itr_participants->second) << "," << std::get<4>(itr_participants->second) << "," << std::get<5>(itr_participants->second) << "," << std::get<6>(itr_participants->second) << "," << std::get<7>(itr_participants->second) << std::endl;
   }
   file_out.close();
 }
@@ -465,6 +520,7 @@ void Trial::Initialize(std::string input_file, std::string output_File_Participa
   output_file_participants = output_File_Participants;
   output_file_trial = output_File_Trial;
   output_file_recurrent_infs = output_File_Recurrent;
+
 
   // initialize other necessary parameters
   num_enrolled = 0;
@@ -541,6 +597,10 @@ void Trial::readParamFile(std::string input_file)
     if(parameter_name == "trial_PQ_lowage")
     {
       ss >> trial_PQ_lowage;
+    }
+    if(parameter_name == "G6PD_activity_threshold")
+    {
+      ss >> G6PD_activity_threshold;
     }
     if(parameter_name.find("followup_date_") != string::npos)
     {

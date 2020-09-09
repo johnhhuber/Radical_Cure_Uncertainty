@@ -56,6 +56,8 @@ public:
   double trial_PQ_prop_stratum_2; // proportion of individuals belonging to stratum 2
   double trial_PQ_lowage; // lowest age of individuals that can be enrolled in the trial
 
+  double G6PD_activity_threshold; // activity threshold for G6PD 
+
   std::string output_file_participants;
   std::string output_file_trial;
   std::string output_file_recurrent_infs;
@@ -63,7 +65,7 @@ public:
   std::map<int, std::vector<std::tuple<int, bool, bool>>> record_LM_recurrent_infections;
   std::map<int, std::vector<std::tuple<int, string>>> record_all_recurrent_infections;
 
-  std::map<int, std::tuple<string, int, int, double, double, int, int>> participant_data;
+  std::map<int, std::tuple<string, int, int, double, double, double, int, int>> participant_data;
 
   // member functions
   void readParamFile(std::string);

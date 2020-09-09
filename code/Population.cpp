@@ -154,7 +154,8 @@ void Population::human_step(Params& theta)
 		HH.AQ8_proph = 0;
 		HH.AQ8_proph_timer = -1.0;
 
-		HH.Hyp = 0;
+		HH.Hyp_Pre_Enrollment = 0;
+		HH.Hyp_Post_Enrollment = 0;
 
 		if (genunf(0.0, 1.0) < 0.5)
 		{
@@ -521,11 +522,11 @@ void Population::summary()
 		prev_all[2] = prev_all[2] + people[n].I_LM + people[n].I_D + people[n].T;          // LM detectable infections
 		prev_all[3] = prev_all[3] + people[n].I_D + people[n].T;                           // Clinical episodes
 
-		if (people[n].Hyp > 0)
+		if (people[n].Hyp_Pre_Enrollment > 0 || people[n].Hyp_Post_Enrollment > 0)
 		{
 			prev_all[4] = prev_all[4] + 1;                     // Hypnozoite positive
 
-			prev_all[5] = prev_all[5] + people[n].Hyp;         // Number of batches of hypnozoites
+			prev_all[5] = prev_all[5] + people[n].Hyp_Pre_Enrollment + people[n].Hyp_Post_Enrollment;         // Number of batches of hypnozoites
 		}
 
 		////////////////////////////////////////
@@ -557,11 +558,11 @@ void Population::summary()
 			prev_U5[2] = prev_U5[2] + people[n].I_LM + people[n].I_D + people[n].T;        // LM detectable infections
 			prev_U5[3] = prev_U5[3] + people[n].I_D + people[n].T;                         // Clinical episodes
 
-			if (people[n].Hyp > 0)
+			if (people[n].Hyp_Pre_Enrollment > 0 || people[n].Hyp_Post_Enrollment > 0)
 			{
 				prev_U5[4] = prev_U5[4] + 1;                     // Hypnozoite positive
 
-				prev_U5[5] = prev_U5[5] + people[n].Hyp;    // Number of batches of hypnozoites
+				prev_U5[5] = prev_U5[5] + people[n].Hyp_Pre_Enrollment + people[n].Hyp_Post_Enrollment;    // Number of batches of hypnozoites
 			}
 
 			////////////////////////////////////////
@@ -594,11 +595,11 @@ void Population::summary()
 			prev_U10[2] = prev_U10[2] + people[n].I_LM + people[n].I_D + people[n].T;    // LM detectable infections
 			prev_U10[3] = prev_U10[3] + people[n].I_D + people[n].T;                     // Clinical episodes
 
-			if (people[n].Hyp > 0)
+			if (people[n].Hyp_Pre_Enrollment > 0 || people[n].Hyp_Post_Enrollment > 0)
 			{
 				prev_U10[4] = prev_U10[4] + 1;                     // Hypnozoite positive
 
-				prev_U10[5] = prev_U10[5] + people[n].Hyp;    // Number of batches of hypnozoites
+				prev_U10[5] = prev_U10[5] + people[n].Hyp_Pre_Enrollment + people[n].Hyp_Post_Enrollment;    // Number of batches of hypnozoites
 			}
 
 			////////////////////////////////////////
@@ -2969,7 +2970,8 @@ void Population::ind_at_equil(Params& theta)
 		if (rand_comp <= yH_eq_cumsum[HH.gender][i_index][j_index][0])
 		{
 			HH.S = 1;
-			HH.Hyp = 0;
+			HH.Hyp_Pre_Enrollment = 0;
+			HH.Hyp_Post_Enrollment = 0;
 		}
 
 		for (int k = 1; k < (K_max + 1); k++)
@@ -2977,7 +2979,8 @@ void Population::ind_at_equil(Params& theta)
 			if ((rand_comp > yH_eq_cumsum[HH.gender][i_index][j_index][k - 1]) && (rand_comp <= yH_eq_cumsum[HH.gender][i_index][j_index][k]))
 			{
 				HH.S = 1;
-				HH.Hyp = k;
+				HH.Hyp_Pre_Enrollment = k;
+				HH.Hyp_Post_Enrollment = 0;
 			}
 		}
 
@@ -2993,7 +2996,8 @@ void Population::ind_at_equil(Params& theta)
 					if (c == 4) { HH.T = 1; }
 					if (c == 5) { HH.P = 1; }
 
-					HH.Hyp = k;
+					HH.Hyp_Pre_Enrollment = k;
+					HH.Hyp_Post_Enrollment = 0;
 				}
 			}
 		}
@@ -3001,7 +3005,8 @@ void Population::ind_at_equil(Params& theta)
 		if (rand_comp > yH_eq_cumsum[HH.gender][i_index][j_index][N_H_comp*(K_max + 1) - 1])
 		{
 			HH.P = 1;
-			HH.Hyp = K_max;
+			HH.Hyp_Pre_Enrollment = K_max;
+			HH.Hyp_Post_Enrollment = 0;
 		}
 
 
@@ -3011,8 +3016,8 @@ void Population::ind_at_equil(Params& theta)
 		HH.A_par_mat  = A_par_eq_mean[HH.gender][index_age_20][j_index] * theta.P_mat*exp(-age_mids[i_index] / theta.d_mat);
 		HH.A_clin_mat = A_clin_eq_mean[HH.gender][index_age_20][j_index] * theta.P_mat*exp(-age_mids[i_index] / theta.d_mat);
 
-		HH.A_par = A_par_eq[HH.gender][i_index][j_index][HH.Hyp]   - HH.A_par_mat;
-		HH.A_clin = A_clin_eq[HH.gender][i_index][j_index][HH.Hyp] - HH.A_clin_mat;
+		HH.A_par = A_par_eq[HH.gender][i_index][j_index][HH.Hyp_Pre_Enrollment + HH.Hyp_Post_Enrollment]   - HH.A_par_mat;
+		HH.A_clin = A_clin_eq[HH.gender][i_index][j_index][HH.Hyp_Pre_Enrollment + HH.Hyp_Post_Enrollment] - HH.A_clin_mat;
 
 
 		HH.A_par_boost = 1;
@@ -3035,7 +3040,7 @@ void Population::ind_at_equil(Params& theta)
 
 		for (int k = 0; k < theta.H_track; k++)
 		{
-			HH.lam_rel_track.push_back(HH.Hyp*theta.ff);
+			HH.lam_rel_track.push_back((HH.Hyp_Pre_Enrollment + HH.Hyp_Post_Enrollment)*theta.ff);
 		}
 
 

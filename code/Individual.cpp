@@ -23,7 +23,6 @@
 ////////////////////////////////////////////////////////////
 
 int CH_sample(double *xx, int nn);
-double G6PD_SD_BioSensor(double G6PD_true);
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -61,7 +60,7 @@ void Individual::state_mover(Params& theta, double lam_bite)
 	lam_bite_lag = lam_bite_track[0];
 
 
-	lam_rel_track.push_back(((double)Hyp)*theta.ff);
+	lam_rel_track.push_back(((double)(Hyp_Pre_Enrollment + Hyp_Post_Enrollment)) * theta.ff);
 	lam_rel_track.erase(lam_rel_track.begin());
 
 	lam_rel_lag = lam_rel_track[0];
@@ -80,6 +79,9 @@ void Individual::state_mover(Params& theta, double lam_bite)
 	Relapse_PCR_new = 0;
 	Relapse_LM_new = 0;
 	Relapse_D_new = 0;
+
+	Relapse_Pre_Enrollment = 0;
+	Relapse_Post_Enrollment = 0;
 
 	Reinfection_PCR_new = 0;
 	Reinfection_LM_new = 0;
@@ -156,16 +158,31 @@ void Individual::state_mover(Params& theta, double lam_bite)
 
 			if (CH_move == 0)
 			{
-				// re-infection occurs
-				if (lam_bite_lag / lam_H_lag > genunf(0.0, 1.0))
+				// relapse occurs
+				if (lam_bite_lag / lam_H_lag <= genunf(0.0, 1.0))
 				{
+					Relapse_PCR_new = 1;
+
+					// simulate whether the relapse occurred from hypnozoites acquired before or after trial enrollment
+					if((Hyp_Pre_Enrollment * 1.0) / (Hyp_Pre_Enrollment + Hyp_Post_Enrollment) > genunf(0.0, 1.0))
+					{
+						Relapse_Pre_Enrollment = 1;
+					}else{
+						Relapse_Post_Enrollment = 1;
+					}
+
+				}else{
 					if (AQ8_proph == 0)
 					{
-						Hyp = Hyp + 1;
+						// add hypnozoites to the appropriate counter, depending upon whether the indivdual is enrolled in the trial
+						if(enrolled_in_trial)
+						{
+							Hyp_Post_Enrollment = Hyp_Post_Enrollment + 1;
+						}else{
+							Hyp_Pre_Enrollment = Hyp_Pre_Enrollment + 1;
+						}
 					}
 					Reinfection_PCR_new = 1;
-				}else{
-					Relapse_PCR_new = 1;
 				}
 
 				if (A_par_boost == 1)
@@ -197,18 +214,32 @@ void Individual::state_mover(Params& theta, double lam_bite)
 
 			if (CH_move == 1)
 			{
-				// reinfection occurs
-				if (lam_bite_lag / lam_H_lag > genunf(0.0, 1.0))
+				// relapse occurs
+				if (lam_bite_lag / lam_H_lag <= genunf(0.0, 1.0))
 				{
+					Relapse_LM_new = 1;
+					Relapse_PCR_new = 1;
+
+					// simulate whether the relapse occurred from hypnozoites acquired before or after trial enrollment
+					if((Hyp_Pre_Enrollment * 1.0) / (Hyp_Pre_Enrollment + Hyp_Post_Enrollment) > genunf(0.0, 1.0))
+					{
+						Relapse_Pre_Enrollment = 1;
+					}else{
+						Relapse_Post_Enrollment = 1;
+					}
+				}else{
 					if (AQ8_proph == 0)
 					{
-						Hyp = Hyp + 1;
+						// add hypnozoites to the appropriate counter, depending upon whether the indivdual is enrolled in the trial
+						if(enrolled_in_trial)
+						{
+							Hyp_Post_Enrollment = Hyp_Post_Enrollment + 1;
+						}else{
+							Hyp_Pre_Enrollment = Hyp_Pre_Enrollment + 1;
+						}
 					}
 					Reinfection_LM_new = 1;
 					Reinfection_PCR_new = 1;
-				}else{
-					Relapse_LM_new = 1;
-					Relapse_PCR_new = 1;
 				}
 
 				if (A_par_boost == 1)
@@ -241,20 +272,34 @@ void Individual::state_mover(Params& theta, double lam_bite)
 
 			if (CH_move == 2)
 			{
-				// reinfection occurs
-				if (lam_bite_lag / lam_H_lag > genunf(0.0, 1.0))
+				// relapse occurs
+				if (lam_bite_lag / lam_H_lag <= genunf(0.0, 1.0))
 				{
+					Relapse_D_new = 1;
+					Relapse_LM_new = 1;
+					Relapse_PCR_new = 1;
+
+					// simulate whether the relapse occurred from hypnozoites acquired before or after trial enrollment
+					if((Hyp_Pre_Enrollment * 1.0) / (Hyp_Pre_Enrollment + Hyp_Post_Enrollment) > genunf(0.0, 1.0))
+					{
+						Relapse_Pre_Enrollment = 1;
+					}else{
+						Relapse_Post_Enrollment = 1;
+					}
+				}else{
+
 					if (AQ8_proph == 0)
 					{
-						Hyp = Hyp + 1;
+						if(enrolled_in_trial)
+						{
+							Hyp_Post_Enrollment = Hyp_Post_Enrollment + 1;
+						}else{
+							Hyp_Pre_Enrollment = Hyp_Pre_Enrollment + 1;
+						}
 					}
 					Reinfection_D_new = 1;
 					Reinfection_LM_new = 1;
 					Reinfection_PCR_new = 1;
-				}else{
-					Relapse_D_new = 1;
-					Relapse_LM_new = 1;
-					Relapse_PCR_new = 1;
 				}
 
 				if (A_par_boost == 1)
@@ -288,20 +333,34 @@ void Individual::state_mover(Params& theta, double lam_bite)
 
 			if (CH_move == 3)
 			{
-				// reinfection occurs
-				if (lam_bite_lag / lam_H_lag > genunf(0.0, 1.0))
+				// relapse occurs
+				if (lam_bite_lag / lam_H_lag <= genunf(0.0, 1.0))
 				{
+					Relapse_D_new = 1;
+					Relapse_LM_new = 1;
+					Relapse_PCR_new = 1;
+
+					// simulate whether the relapse occurred from hypnozoites acquired before or after trial enrollment
+					if((Hyp_Pre_Enrollment * 1.0) / (Hyp_Pre_Enrollment + Hyp_Post_Enrollment) > genunf(0.0, 1.0))
+					{
+						Relapse_Pre_Enrollment = 1;
+					}else{
+						Relapse_Post_Enrollment = 1;
+					}
+				}else{
+
 					if (AQ8_proph == 0)
 					{
-						Hyp = Hyp + 1;
+						if(enrolled_in_trial)
+						{
+							Hyp_Post_Enrollment = Hyp_Post_Enrollment + 1;
+						}else{
+							Hyp_Pre_Enrollment = Hyp_Pre_Enrollment + 1;
+						}
 					}
 					Reinfection_D_new = 1;
 					Reinfection_LM_new = 1;
 					Reinfection_PCR_new = 1;
-				}else{
-					Relapse_D_new = 1;
-					Relapse_LM_new = 1;
-					Relapse_PCR_new = 1;
 				}
 
 				if (A_par_boost == 1)
@@ -373,16 +432,31 @@ void Individual::state_mover(Params& theta, double lam_bite)
 
 			if (CH_move == 1)
 			{
-				// reinfection occurs
-				if (lam_bite_lag / lam_H_lag > genunf(0.0, 1.0))
+				// relapse occurs
+				if (lam_bite_lag / lam_H_lag <= genunf(0.0, 1.0))
 				{
+					Relapse_PCR_new = 1;
+
+					// simulate whether the relapse occurred from hypnozoites acquired before or after trial enrollment
+					if((Hyp_Pre_Enrollment * 1.0) / (Hyp_Pre_Enrollment + Hyp_Post_Enrollment) > genunf(0.0, 1.0))
+					{
+						Relapse_Pre_Enrollment = 1;
+					}else{
+						Relapse_Post_Enrollment = 1;
+					}
+
+				}else{
+
 					if (AQ8_proph == 0)
 					{
-						Hyp = Hyp + 1;
+						if(enrolled_in_trial)
+						{
+							Hyp_Post_Enrollment = Hyp_Post_Enrollment + 1;
+						}else{
+							Hyp_Pre_Enrollment = Hyp_Pre_Enrollment + 1;
+						}
 					}
 					Reinfection_PCR_new = 1;
-				}else{
-					Relapse_PCR_new = 1;
 				}
 
 				if (A_par_boost == 1)
@@ -409,18 +483,33 @@ void Individual::state_mover(Params& theta, double lam_bite)
 
 			if (CH_move == 2)
 			{
-				// reinfection occurs
-				if (lam_bite_lag / lam_H_lag > genunf(0.0, 1.0))
+				// relapse occurs
+				if (lam_bite_lag / lam_H_lag <= genunf(0.0, 1.0))
 				{
+					Relapse_LM_new = 1;
+					Relapse_PCR_new = 1;
+
+					// simulate whether the relapse occurred from hypnozoites acquired before or after trial enrollment
+					if((Hyp_Pre_Enrollment * 1.0) / (Hyp_Pre_Enrollment + Hyp_Post_Enrollment) > genunf(0.0, 1.0))
+					{
+						Relapse_Pre_Enrollment = 1;
+					}else{
+						Relapse_Post_Enrollment = 1;
+					}
+
+				}else{
+
 					if (AQ8_proph == 0)
 					{
-						Hyp = Hyp + 1;
+						if(enrolled_in_trial)
+						{
+							Hyp_Post_Enrollment = Hyp_Post_Enrollment + 1;
+						}else{
+							Hyp_Pre_Enrollment = Hyp_Pre_Enrollment + 1;
+						}
 					}
 					Reinfection_LM_new = 1;
 					Reinfection_PCR_new = 1;
-				}else{
-					Relapse_LM_new = 1;
-					Relapse_PCR_new = 1;
 				}
 
 				if (A_par_boost == 1)
@@ -452,20 +541,34 @@ void Individual::state_mover(Params& theta, double lam_bite)
 
 			if (CH_move == 3)
 			{
-				// reinfection occurs
-				if (lam_bite_lag / lam_H_lag > genunf(0.0, 1.0))
+				// relapse occurs
+				if (lam_bite_lag / lam_H_lag <= genunf(0.0, 1.0))
 				{
+					Relapse_D_new = 1;
+					Relapse_LM_new = 1;
+					Relapse_PCR_new = 1;
+
+					// simulate whether the relapse occurred from hypnozoites acquired before or after trial enrollment
+					if((Hyp_Pre_Enrollment * 1.0) / (Hyp_Pre_Enrollment + Hyp_Post_Enrollment) > genunf(0.0, 1.0))
+					{
+						Relapse_Pre_Enrollment = 1;
+					}else{
+						Relapse_Post_Enrollment = 1;
+					}
+
+				}else{
 					if (AQ8_proph == 0)
 					{
-						Hyp = Hyp + 1;
+						if(enrolled_in_trial)
+						{
+							Hyp_Post_Enrollment = Hyp_Post_Enrollment + 1;
+						}else{
+							Hyp_Pre_Enrollment = Hyp_Pre_Enrollment + 1;
+						}
 					}
 					Reinfection_D_new = 1;
 					Reinfection_LM_new = 1;
 					Reinfection_PCR_new = 1;
-				}else{
-					Relapse_D_new = 1;
-					Relapse_LM_new = 1;
-					Relapse_PCR_new = 1;
 				}
 
 				if (A_par_boost == 1)
@@ -498,20 +601,33 @@ void Individual::state_mover(Params& theta, double lam_bite)
 
 			if (CH_move == 4)
 			{
-				// reinfection occurs
-				if (lam_bite_lag / lam_H_lag > genunf(0.0, 1.0))
+				// relapse occurs
+				if (lam_bite_lag / lam_H_lag <= genunf(0.0, 1.0))
 				{
+					Relapse_D_new = 1;
+					Relapse_LM_new = 1;
+					Relapse_PCR_new = 1;
+
+					// simulate whether the relapse occurred from hypnozoites acquired before or after trial enrollment
+					if((Hyp_Pre_Enrollment * 1.0) / (Hyp_Pre_Enrollment + Hyp_Post_Enrollment) > genunf(0.0, 1.0))
+					{
+						Relapse_Pre_Enrollment = 1;
+					}else{
+						Relapse_Post_Enrollment = 1;
+					}
+				}else{
 					if (AQ8_proph == 0)
 					{
-						Hyp = Hyp + 1;
+						if(enrolled_in_trial)
+						{
+							Hyp_Post_Enrollment = Hyp_Post_Enrollment + 1;
+						}else{
+							Hyp_Pre_Enrollment = Hyp_Pre_Enrollment + 1;
+						}
 					}
 					Reinfection_D_new = 1;
 					Reinfection_LM_new = 1;
 					Reinfection_PCR_new = 1;
-				}else{
-					Relapse_D_new = 1;
-					Relapse_LM_new = 1;
-					Relapse_PCR_new = 1;
 				}
 
 				if (A_par_boost == 1)
@@ -584,18 +700,34 @@ void Individual::state_mover(Params& theta, double lam_bite)
 
 			if (CH_move == 1)
 			{
-				// reinfection occurs
-				if (lam_bite_lag / lam_H_lag > genunf(0.0, 1.0))
+				// relapse occurs
+				if (lam_bite_lag / lam_H_lag <= genunf(0.0, 1.0))
 				{
+					Relapse_LM_new = 1;
+					Relapse_PCR_new = 1;
+
+					// simulate whether the relapse occurred from hypnozoites acquired before or after trial enrollment
+					if((Hyp_Pre_Enrollment * 1.0) / (Hyp_Pre_Enrollment + Hyp_Post_Enrollment) > genunf(0.0, 1.0))
+					{
+						Relapse_Pre_Enrollment = 1;
+					}else{
+						Relapse_Post_Enrollment = 1;
+					}
+
+				}else{
+
 					if (AQ8_proph == 0)
 					{
-						Hyp = Hyp + 1;
+						if(enrolled_in_trial)
+						{
+							Hyp_Post_Enrollment = Hyp_Post_Enrollment + 1;
+						}else{
+							Hyp_Pre_Enrollment = Hyp_Pre_Enrollment + 1;
+						}
 					}
 					Reinfection_LM_new = 1;
 					Reinfection_PCR_new = 1;
-				}else{
-					Relapse_LM_new = 1;
-					Relapse_PCR_new = 1;
+
 				}
 
 				if (A_par_boost == 1)
@@ -624,20 +756,36 @@ void Individual::state_mover(Params& theta, double lam_bite)
 
 			if (CH_move == 2)
 			{
-				// reinfection event occurs
-				if (lam_bite_lag / lam_H_lag > genunf(0.0, 1.0))
+				// relapse occurs
+				if (lam_bite_lag / lam_H_lag <= genunf(0.0, 1.0))
 				{
+					Relapse_D_new = 1;
+					Relapse_LM_new = 1;
+					Relapse_PCR_new = 1;
+
+					// simulate whether the relapse occurred from hypnozoites acquired before or after trial enrollment
+					if((Hyp_Pre_Enrollment * 1.0) / (Hyp_Pre_Enrollment + Hyp_Post_Enrollment) > genunf(0.0, 1.0))
+					{
+						Relapse_Pre_Enrollment = 1;
+					}else{
+						Relapse_Post_Enrollment = 1;
+					}
+
+				}else{
+
 					if (AQ8_proph == 0)
 					{
-						Hyp = Hyp + 1;
+						if(enrolled_in_trial)
+						{
+							Hyp_Post_Enrollment = Hyp_Post_Enrollment + 1;
+						}else{
+							Hyp_Pre_Enrollment = Hyp_Pre_Enrollment + 1;
+						}
 					}
 					Reinfection_D_new = 1;
 					Reinfection_LM_new = 1;
 					Reinfection_PCR_new = 1;
-				}else{
-					Relapse_D_new = 1;
-					Relapse_LM_new = 1;
-					Relapse_PCR_new = 1;
+
 				}
 
 				if (A_par_boost == 1)
@@ -670,20 +818,36 @@ void Individual::state_mover(Params& theta, double lam_bite)
 
 			if (CH_move == 3)
 			{
-				// reinfection occurs
-				if (lam_bite_lag / lam_H_lag > genunf(0.0, 1.0))
+				// relapse occurs
+				if (lam_bite_lag / lam_H_lag <= genunf(0.0, 1.0))
 				{
+					Relapse_D_new = 1;
+					Relapse_LM_new = 1;
+					Relapse_PCR_new = 1;
+
+					// simulate whether the relapse occurred from hypnozoites acquired before or after trial enrollment
+					if((Hyp_Pre_Enrollment * 1.0) / (Hyp_Pre_Enrollment + Hyp_Post_Enrollment) > genunf(0.0, 1.0))
+					{
+						Relapse_Pre_Enrollment = 1;
+					}else{
+						Relapse_Post_Enrollment = 1;
+					}
+
+				}else{
+
 					if (AQ8_proph == 0)
 					{
-						Hyp = Hyp + 1;
+						if(enrolled_in_trial)
+						{
+							Hyp_Post_Enrollment = Hyp_Post_Enrollment + 1;
+						}else{
+							Hyp_Pre_Enrollment = Hyp_Pre_Enrollment + 1;
+						}
 					}
 					Reinfection_D_new = 1;
 					Reinfection_LM_new = 1;
 					Reinfection_PCR_new = 1;
-				}else{
-					Relapse_D_new = 1;
-					Relapse_LM_new = 1;
-					Relapse_PCR_new = 1;
+
 				}
 
 				if (A_par_boost == 1)
@@ -746,20 +910,36 @@ void Individual::state_mover(Params& theta, double lam_bite)
 
 			if (CH_move == 1)
 			{
-				// reinfection occurs
-				if (lam_bite_lag / lam_H_lag > genunf(0.0, 1.0))
+				// relapse occurs
+				if (lam_bite_lag / lam_H_lag <= genunf(0.0, 1.0))
 				{
+					Relapse_D_new = 1;
+					Relapse_LM_new = 1;
+					Relapse_PCR_new = 1;
+
+					// simulate whether the relapse occurred from hypnozoites acquired before or after trial enrollment
+					if((Hyp_Pre_Enrollment * 1.0) / (Hyp_Pre_Enrollment + Hyp_Post_Enrollment) > genunf(0.0, 1.0))
+					{
+						Relapse_Pre_Enrollment = 1;
+					}else{
+						Relapse_Post_Enrollment = 1;
+					}
+
+				}else{
+
 					if (AQ8_proph == 0)
 					{
-						Hyp = Hyp + 1;
+						if(enrolled_in_trial)
+						{
+							Hyp_Post_Enrollment = Hyp_Post_Enrollment + 1;
+						}else{
+							Hyp_Pre_Enrollment = Hyp_Pre_Enrollment + 1;
+						}
 					}
 					Reinfection_D_new = 1;
 					Reinfection_LM_new = 1;
 					Reinfection_PCR_new = 1;
-				}else{
-					Relapse_D_new = 1;
-					Relapse_LM_new = 1;
-					Relapse_PCR_new = 1;
+
 				}
 
 				if (A_par_boost == 1)
@@ -830,7 +1010,12 @@ void Individual::state_mover(Params& theta, double lam_bite)
 				{
 					if (AQ8_proph == 0)
 					{
-						Hyp = Hyp + 1;
+						if(enrolled_in_trial)
+						{
+							Hyp_Post_Enrollment = Hyp_Post_Enrollment + 1;
+						}else{
+							Hyp_Pre_Enrollment = Hyp_Pre_Enrollment + 1;
+						}
 					}
 				}
 
@@ -897,7 +1082,12 @@ void Individual::state_mover(Params& theta, double lam_bite)
 				{
 					if (AQ8_proph == 0)
 					{
-						Hyp = Hyp + 1;
+						if(enrolled_in_trial)
+						{
+							Hyp_Post_Enrollment = Hyp_Post_Enrollment + 1;
+						}else{
+							Hyp_Pre_Enrollment = Hyp_Pre_Enrollment + 1;
+						}
 					}
 				}
 
@@ -944,14 +1134,24 @@ void Individual::ager(Params& theta)
 	/////////////////////////
 	// Loss of hypnozoites
 
-	if (Hyp > K_max)
+	if (Hyp_Pre_Enrollment > K_max)
 	{
-		Hyp = K_max;
+		Hyp_Pre_Enrollment = K_max;
+	}
+	if (Hyp_Post_Enrollment > K_max)
+	{
+		Hyp_Post_Enrollment = K_max;
 	}
 
-	if (1.0 - exp(-t_step * theta.gamma_L*Hyp) > genunf(0, 1))
+	if (1.0 - exp(-t_step * theta.gamma_L*(Hyp_Pre_Enrollment + Hyp_Post_Enrollment)) > genunf(0, 1))
 	{
-		Hyp = Hyp - 1;
+		// simulate whether the loss of hypnozoites comes from batch acquired pre or post enrollment in trial
+		if((Hyp_Pre_Enrollment * 1.0) / (Hyp_Pre_Enrollment + Hyp_Post_Enrollment) > genunf(0.0, 1.0))
+		{
+			Hyp_Pre_Enrollment = Hyp_Pre_Enrollment - 1;
+		}else{
+			Hyp_Post_Enrollment = Hyp_Post_Enrollment - 1;
+		}
 	}
 
 
@@ -1221,11 +1421,13 @@ void Individual::case_management(Params& theta)
 			// Hyp = 0;                                  // Hypnozoites cleared
 			if(PQ_stratum == 1)
 			{
-				Hyp -= ignbin(Hyp, theta.CM_PQ_eff_stratum_1);
+				Hyp_Pre_Enrollment -= ignbin(Hyp_Pre_Enrollment, theta.CM_PQ_eff_stratum_1);
+				Hyp_Post_Enrollment -= ignbin(Hyp_Post_Enrollment, theta.CM_PQ_eff_stratum_1);
 			}
 			if(PQ_stratum == 2)
 			{
-				Hyp -= ignbin(Hyp, theta.CM_PQ_eff_stratum_2);
+				Hyp_Pre_Enrollment -= ignbin(Hyp_Pre_Enrollment, theta.CM_PQ_eff_stratum_2);
+				Hyp_Post_Enrollment -= ignbin(Hyp_Post_Enrollment, theta.CM_PQ_eff_stratum_2);
 			}
 
 			AQ8_proph = 1;                            // Put under prophylaxis
@@ -1388,11 +1590,13 @@ void Individual::case_management(Params& theta)
 				// Hyp = 0;                                // Hypnozoites cleared
 				if(PQ_stratum == 1)
 				{
-					Hyp -= ignbin(Hyp, theta.CM_PQ_eff_stratum_1);
+					Hyp_Pre_Enrollment -= ignbin(Hyp_Pre_Enrollment, theta.CM_PQ_eff_stratum_1);
+				    Hyp_Post_Enrollment -= ignbin(Hyp_Post_Enrollment, theta.CM_PQ_eff_stratum_1);
 				}
 				if(PQ_stratum == 2)
 				{
-					Hyp -= ignbin(Hyp, theta.CM_PQ_eff_stratum_2);
+					Hyp_Pre_Enrollment -= ignbin(Hyp_Pre_Enrollment, theta.CM_PQ_eff_stratum_2);
+					Hyp_Post_Enrollment -= ignbin(Hyp_Post_Enrollment, theta.CM_PQ_eff_stratum_2);
 				}
 
 				AQ8_proph = 1;                          // Put under prophylaxis
@@ -1518,7 +1722,9 @@ void Individual::case_management(Params& theta)
 
 			if ((TQ_treat == 1) && (TQ_effective == 1))
 			{
-				Hyp = 0;                               // Hypnozoites cleared
+				// Hyp = 0;                               // Hypnozoites cleared
+				Hyp_Post_Enrollment = 0;
+				Hyp_Pre_Enrollment = 0;
 
 				AQ8_proph = 1;                         // Put under prophylaxis
 				AQ8_proph_timer = theta.CM_TQ_proph;   // Timer for prophylaxis set
@@ -1540,11 +1746,13 @@ void Individual::case_management(Params& theta)
 				// Hyp = 0;                                   // Hypnozoites cleared
 				if(PQ_stratum == 1)
 				{
-					Hyp -= ignbin(Hyp, theta.CM_PQ_eff_stratum_1);
+					Hyp_Pre_Enrollment -= ignbin(Hyp_Pre_Enrollment, theta.CM_PQ_eff_stratum_1);
+					Hyp_Post_Enrollment -= ignbin(Hyp_Post_Enrollment, theta.CM_PQ_eff_stratum_1);
 				}
 				if(PQ_stratum == 2)
 				{
-					Hyp -= ignbin(Hyp, theta.CM_PQ_eff_stratum_2);
+					Hyp_Pre_Enrollment -= ignbin(Hyp_Pre_Enrollment, theta.CM_PQ_eff_stratum_2);
+					Hyp_Post_Enrollment -= ignbin(Hyp_Post_Enrollment, theta.CM_PQ_eff_stratum_2);
 				}
 
 				AQ8_proph = 1;                             // Put under prophylaxis

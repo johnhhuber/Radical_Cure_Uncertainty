@@ -24,6 +24,8 @@
 #include "Params.h"
 
 
+double G6PD_SD_BioSensor(double G6PD_true);
+
 /////////////////////////////////////////////////////////////////////////////
 //                                                                         //
 // 4.1.1.  Define a class for humans                                       //
@@ -122,10 +124,12 @@ public:
 	bool T;
 	bool P;
 
+
 	/////////////////////////////////////////////////////////////////
 	//  4.1.1.6.  Number of batches of hypnozoites. Must be an integer.
 
-	int Hyp;
+	int Hyp_Pre_Enrollment; 				// Number of batches of hypnozoites from infections prior to enrollment in the trial
+	int Hyp_Post_Enrollment;				// Number of batches of hypnozoites from infections after enrollment in the trial
 
 	////////////////////////////////////////////////////
 	// Indicator for competing hazards move
@@ -146,6 +150,9 @@ public:
 	bool Reinfection_LM_new;			// New LM-detectable reinfection
 	bool Relapse_D_new;						// New clinical relapse episode
 	bool Reinfection_D_new;				// New clinical reinfection episode
+
+	bool Relapse_Pre_Enrollment; 	// Indicator for whether the relapse occurred from hypnozoites acquired prior to enrollment in the trial
+	bool Relapse_Post_Enrollment;  // Indicator for whether the relapse occurred from hypnozoites acquired after enrollment in the trial
 
 	bool CQ_treat;          // Indicator for chloroquine (or other blood-stage drug) treatment
 	bool PQ_treat;          // Indicator for primaquine treatment

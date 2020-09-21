@@ -436,6 +436,38 @@ void Trial::administerTreatment(Params &theta, Individual *trial_participant, in
       }
     }
 
+    // distribute LLINs if part of the trial protocol
+    if(is_LLIN_distributed)
+    {
+      // update LLIN status and age
+      trial_participant->LLIN = 1;
+      trial_participant->LLIN_age = 0.0;
+
+      // set effects of LLIN on different vector populations 
+      for(int v = 0; v < N_mosq; v++)
+      {
+        trial_participant->d_LLIN[v] = theta.d_LLIN_0[v];
+        trial_participant->r_LLIN[v] = theta.r_LLIN_0[v];
+        trial_participant->s_LLIN[v] = 1 - trial_participant->d_LLIN[v] - trial_participant->r_LLIN[v];
+      }
+    }
+
+    // administer IRS if part of the trial protocol
+    if(is_IRS_administered)
+    {
+      // update IRS status and age
+      trial_participant->IRS = 1;
+      trial_participant->IRS_age = 0.0;
+
+      // set effects of IRS on different vector populations 
+      for(int v = 0; v < N_mosq; v++)
+      {
+        trial_participant->d_IRS[v] = theta.d_IRS_0[v];
+        trial_participant->r_IRS[v] = theta.r_IRS_0[v];
+        trial_participant->s_IRS[v] = 1.0 - trial_participant->d_IRS[v] - trial_participant->r_IRS[v];
+      }
+    }
+
     // record the number of hypnozoites following treatment
     std::get<7>(participant_data.find(trial_participant->participant_ID)->second) = trial_participant->Hyp_Pre_Enrollment + trial_participant->Hyp_Post_Enrollment;
 
@@ -521,7 +553,6 @@ void Trial::Initialize(std::string input_file, std::string output_File_Participa
   output_file_trial = output_File_Trial;
   output_file_recurrent_infs = output_File_Recurrent;
 
-
   // initialize other necessary parameters
   num_enrolled = 0;
   prob_treatment_arm_allocation = (1.0 * treatment_arm_sample_size) / (1.0 * (treatment_arm_sample_size + placebo_arm_sample_size));
@@ -597,6 +628,14 @@ void Trial::readParamFile(std::string input_file)
     if(parameter_name == "trial_PQ_lowage")
     {
       ss >> trial_PQ_lowage;
+    }
+    if(parameter_name == "is_LLIN_distributed")
+    {
+      ss >> is_LLIN_distributed;
+    }
+    if(parameter_name == "is_IRS_administered")
+    {
+      ss >> is_IRS_administered;
     }
     if(parameter_name == "G6PD_activity_threshold")
     {

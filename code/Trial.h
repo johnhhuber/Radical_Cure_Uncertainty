@@ -58,6 +58,9 @@ public:
 
   double G6PD_activity_threshold; // activity threshold for G6PD 
 
+  bool is_LLIN_distributed; // boolean specifying whether trial participants are given LLINs or not 
+  bool is_IRS_administered; // boolean specifying whether trial participants are administered IRS
+
   std::string output_file_participants;
   std::string output_file_trial;
   std::string output_file_recurrent_infs;

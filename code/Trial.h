@@ -55,6 +55,8 @@ public:
   double trial_PQ_prop_stratum_1; // proportion of individuals belonging to stratum 1
   double trial_PQ_prop_stratum_2; // proportion of individuals belonging to stratum 2
   double trial_PQ_lowage; // lowest age of individuals that can be enrolled in the trial
+  double trial_PQ_proph; // duration (in days) of prophylaxis due to PQ treatment
+  double trial_observation_period; // duration (in days) of trial observation 
 
   double G6PD_activity_threshold; // activity threshold for G6PD 
 

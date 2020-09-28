@@ -76,6 +76,8 @@ void Trial::enrollParticipants(Population& POP, int curr_day)
       itr_eligible->dropout_date = curr_day + trial_duration;
       itr_eligible->G6PD_read = G6PD_read;
 
+      std::cout << num_enrolled << " " << itr_eligible->Relapse_D_new << " " << itr_eligible->Reinfection_D_new << " " << itr_eligible->Hyp_Pre_Enrollment << " " << itr_eligible->Hyp_Post_Enrollment << std::endl;
+
       // if in treatment arm, add in information about PQ stratum
       if(arm_allocation == "TREATMENT")
       {
@@ -375,9 +377,15 @@ void Trial::updateParticipants(Population& POP, Params& theta, int curr_day)
 
 
 void Trial::administerTreatment(Params &theta, Individual *trial_participant, int days_since_enrollment)
-{
+{ 
+  // treatment and vector control interventions only administered upon enrollment
   if(days_since_enrollment == 0)
   {
+    // change the status of the individual to be under observation
+    trial_participant->under_observation = 1;
+    trial_participant->observation_timer = trial_observation_period;
+
+    // administer treatment to those who should get it
     if(trial_participant->trial_arm == "TREATMENT" && trial_participant->enrolled_in_trial)
     {
       // account for effects of PQ on hypnozoites and prophylaxis
@@ -414,10 +422,10 @@ void Trial::administerTreatment(Params &theta, Individual *trial_participant, in
         }
       }
 
-      if(theta.CM_PQ_proph > 0)
+      if(trial_PQ_proph > 0)
       {
         trial_participant->AQ8_proph = 1;
-        trial_participant->AQ8_proph_timer = theta.CM_PQ_proph;
+        trial_participant->AQ8_proph_timer = trial_PQ_proph;
       }
 
       // PQ can improve efficacy of CQ, so account for this effect in clearance
@@ -470,7 +478,6 @@ void Trial::administerTreatment(Params &theta, Individual *trial_participant, in
 
     // record the number of hypnozoites following treatment
     std::get<7>(participant_data.find(trial_participant->participant_ID)->second) = trial_participant->Hyp_Pre_Enrollment + trial_participant->Hyp_Post_Enrollment;
-
   }
 }
 
@@ -628,6 +635,14 @@ void Trial::readParamFile(std::string input_file)
     if(parameter_name == "trial_PQ_lowage")
     {
       ss >> trial_PQ_lowage;
+    }
+    if(parameter_name == "trial_PQ_proph")
+    {
+      ss >> trial_PQ_proph;
+    }
+    if(parameter_name == "trial_observation_period")
+    {
+      ss >> trial_observation_period;
     }
     if(parameter_name == "is_LLIN_distributed")
     {

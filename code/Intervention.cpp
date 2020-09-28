@@ -57,7 +57,7 @@ Intervention::Intervention(const char *coverage_File)
 	/////////////////////////////////////////////////////////////////////////
 	// 3.2.2.2. Note that the matrix we read in may have variable size.
 	//          We first read in the first line of the file, and then matching
-	//          the spaces between columns to get the number of interventions 
+	//          the spaces between columns to get the number of interventions
 	//          rounds.
 	//
 	//          There's very likely a much more effective way to do this.
@@ -123,7 +123,7 @@ Intervention::Intervention(const char *coverage_File)
 	for (int j = 0; j < N_cov_rounds; j++)
 	{
 		//////////////////////////////////////////////////////////////
-		// Intervention 0	
+		// Intervention 0
 		// Front-line treatment - blood-stage drugs
 
 		if ((coverage[0][j] > -0.5) && (coverage[1][j] > -0.5))
@@ -282,7 +282,7 @@ Intervention::Intervention(const char *coverage_File)
 			MSAT0_cover.push_back(    coverage[71][j] );
 			MSAT0_RDT_PCR.push_back(  coverage[72][j] );
 			MSAT0_sens.push_back(     coverage[73][j] );
-			MSAT0_CQ_eff.push_back(   coverage[74][j] ); 
+			MSAT0_CQ_eff.push_back(   coverage[74][j] );
 			MSAT0_CQ_proph.push_back( coverage[75][j] );
 		}
 
@@ -398,7 +398,7 @@ Intervention::Intervention(const char *coverage_File)
 			STAT2_G6PD_test.push_back(      (int)(coverage[147][j]));
 		}
 
-		
+
 		//////////////////////////////////////////////////////////////
 		// Intervention 12
 		// IVM
@@ -702,7 +702,7 @@ void Intervention::distribute(double t, Params& theta, Population& POP)
 			theta.MDA1_PQ_CYP2D6_risk = MDA1_PQ_CYP2D6_risk[m];
 			theta.MDA1_PQ_preg_risk   = MDA1_PQ_preg_risk[m];
 			theta.MDA1_G6PD_test      = MDA1_G6PD_test[m];
-			
+
 			////////////////////////////////////////////
 			// Implement intervention
 
@@ -725,7 +725,7 @@ void Intervention::distribute(double t, Params& theta, Population& POP)
 
 
 				if (gennor(POP.people[n].zz_int[3], theta.sig_round_MDA) < QQ)
-				{				
+				{
 					/////////////////////////////////////////////////////////////////////
 					// Is PQ administered?
 
@@ -799,7 +799,7 @@ void Intervention::distribute(double t, Params& theta, Population& POP)
 					/////////////////////////////////////////////////////////////////////
 					// Was there PQ overtreatment?
 
-					if ((POP.people[n].PQ_treat == 1) && (POP.people[n].Hyp == 0))
+					if ((POP.people[n].PQ_treat == 1) && (POP.people[n].Hyp_Pre_Enrollment == 0 && POP.people[n].Hyp_Post_Enrollment == 0))
 					{
 						POP.people[n].PQ_overtreat = 1;
 					}
@@ -835,7 +835,7 @@ void Intervention::distribute(double t, Params& theta, Population& POP)
 
 					/////////////////////////////////////////////////////////////////////
 					// ACTION: administer chloroquine
-									   
+
 					if (POP.people[n].CQ_effective == 1)
 					{
 						if (POP.people[n].S     == 1) { POP.people[n].S = 0;     POP.people[n].P = 1; }
@@ -856,9 +856,19 @@ void Intervention::distribute(double t, Params& theta, Population& POP)
 
 					if ((POP.people[n].PQ_treat == 1) && (POP.people[n].PQ_effective == 1))
 					{
-						POP.people[n].Hyp = 0;                                  // Hypnozoites cleared
+						// POP.people[n].Hyp = 0;                                  // Hypnozoites cleared
+						if(POP.people[n].PQ_stratum == 1)
+						{
+							POP.people[n].Hyp_Pre_Enrollment -= ignbin(POP.people[n].Hyp_Pre_Enrollment, theta.CM_PQ_eff_stratum_1);
+							POP.people[n].Hyp_Post_Enrollment -= ignbin(POP.people[n].Hyp_Post_Enrollment, theta.CM_PQ_eff_stratum_1);
+						}
+						if(POP.people[n].PQ_stratum == 2)
+						{
+							POP.people[n].Hyp_Pre_Enrollment -= ignbin(POP.people[n].Hyp_Pre_Enrollment, theta.CM_PQ_eff_stratum_2);
+							POP.people[n].Hyp_Post_Enrollment -= ignbin(POP.people[n].Hyp_Post_Enrollment, theta.CM_PQ_eff_stratum_2);
+						}
 
-						POP.people[n].AQ8_proph = 1;                            // Put under prophylaxis 
+						POP.people[n].AQ8_proph = 1;                            // Put under prophylaxis
 						POP.people[n].AQ8_proph_timer = theta.MDA1_PQ_proph;    // Timer for prophylaxis set
 
 						// Developing liver hepatic stages killed
@@ -1002,7 +1012,7 @@ void Intervention::distribute(double t, Params& theta, Population& POP)
 						/////////////////////////////////////////////////////////////////////
 						// Was there PQ overtreatment?
 
-						if ((POP.people[n].PQ_treat == 1) && (POP.people[n].Hyp == 0))
+						if ((POP.people[n].PQ_treat == 1) && (POP.people[n].Hyp_Pre_Enrollment == 0 && POP.people[n].Hyp_Post_Enrollment == 0))
 						{
 							POP.people[n].PQ_overtreat = 1;
 						}
@@ -1119,7 +1129,7 @@ void Intervention::distribute(double t, Params& theta, Population& POP)
 						/////////////////////////////////////////////////////////////////////
 						// Was there PQ overtreatment?
 
-						if ((POP.people[n].PQ_treat == 1) && (POP.people[n].Hyp == 0))
+						if ((POP.people[n].PQ_treat == 1) && (POP.people[n].Hyp_Pre_Enrollment == 0 && POP.people[n].Hyp_Post_Enrollment == 0))
 						{
 							POP.people[n].PQ_overtreat = 1;
 						}
@@ -1133,7 +1143,7 @@ void Intervention::distribute(double t, Params& theta, Population& POP)
 						/////////////////////////////////////////////////////////////////////
 						// Was there TQ overtreatment?
 
-						if ((POP.people[n].TQ_treat == 1) && (POP.people[n].Hyp == 0))
+						if ((POP.people[n].TQ_treat == 1) && (POP.people[n].Hyp_Pre_Enrollment == 0 && POP.people[n].Hyp_Post_Enrollment == 0))
 						{
 							POP.people[n].TQ_overtreat = 1;
 						}
@@ -1151,7 +1161,7 @@ void Intervention::distribute(double t, Params& theta, Population& POP)
 
 					POP.people[n].CQ_treat = 1;
 					POP.people[n].CQ_effective = 0;
-					
+
 					if( (POP.people[n].PQ_treat == 0) && (POP.people[n].TQ_treat == 0) )
 					{
 						if (genunf(0.0, 1.0) < theta.MDA2_CQ_eff)
@@ -1167,7 +1177,7 @@ void Intervention::distribute(double t, Params& theta, Population& POP)
 							POP.people[n].CQ_effective = 1;
 						}
 					}
-					
+
 					if (POP.people[n].TQ_treat == 1)
 					{
 						POP.people[n].CQ_effective = 1;
@@ -1198,9 +1208,20 @@ void Intervention::distribute(double t, Params& theta, Population& POP)
 
 					if ((POP.people[n].PQ_treat == 1) && (POP.people[n].PQ_effective == 1))
 					{
-						POP.people[n].Hyp = 0;                                  // Hypnozoites cleared
+						// POP.people[n].Hyp = 0;                                  // Hypnozoites cleared
+						if(POP.people[n].PQ_stratum == 1)
+						{
+							POP.people[n].Hyp_Pre_Enrollment -= ignbin(POP.people[n].Hyp_Pre_Enrollment, theta.CM_PQ_eff_stratum_1);
+							POP.people[n].Hyp_Post_Enrollment -= ignbin(POP.people[n].Hyp_Post_Enrollment, theta.CM_PQ_eff_stratum_1);
+						}
+						if(POP.people[n].PQ_stratum == 2)
+						{
+							POP.people[n].Hyp_Pre_Enrollment -= ignbin(POP.people[n].Hyp_Pre_Enrollment, theta.CM_PQ_eff_stratum_2);
+							POP.people[n].Hyp_Post_Enrollment -= ignbin(POP.people[n].Hyp_Post_Enrollment, theta.CM_PQ_eff_stratum_2);
+						}
 
-						POP.people[n].AQ8_proph = 1;                            // Put under prophylaxis 
+
+						POP.people[n].AQ8_proph = 1;                            // Put under prophylaxis
 						POP.people[n].AQ8_proph_timer = theta.MDA2_PQ_proph;    // Timer for prophylaxis set
 
 						// Developing liver hepatic stages killed
@@ -1221,9 +1242,10 @@ void Intervention::distribute(double t, Params& theta, Population& POP)
 
 					if ((POP.people[n].TQ_treat == 1) && (POP.people[n].TQ_effective == 1))
 					{
-						POP.people[n].Hyp = 0;                                  // Hypnozoites cleared
+						POP.people[n].Hyp_Pre_Enrollment = 0;                                  // Hypnozoites cleared
+						POP.people[n].Hyp_Post_Enrollment = 0;                                  // Hypnozoites cleared
 
-						POP.people[n].AQ8_proph = 1;                            // Put under prophylaxis 
+						POP.people[n].AQ8_proph = 1;                            // Put under prophylaxis
 						POP.people[n].AQ8_proph_timer = theta.MDA2_TQ_proph;    // Timer for prophylaxis set
 
 						// Developing liver hepatic stages killed
@@ -1292,7 +1314,7 @@ void Intervention::distribute(double t, Params& theta, Population& POP)
 					MSAT_pos = 0;
 
 					////////////////////////////////////////////////
-					// Diagnosis by RDT, assumed the same as LM 	
+					// Diagnosis by RDT, assumed the same as LM
 
 					if (theta.MSAT0_RDT_PCR == 1)
 					{
@@ -1307,7 +1329,7 @@ void Intervention::distribute(double t, Params& theta, Population& POP)
 
 
 					////////////////////////////////////////////////
-					// Diagnosis by PCR 	
+					// Diagnosis by PCR
 
 					if (theta.MSAT0_RDT_PCR == 2)
 					{
@@ -1417,7 +1439,7 @@ void Intervention::distribute(double t, Params& theta, Population& POP)
 					MSAT_pos = 0;
 
 					////////////////////////////////////////////////
-					// Diagnosis by RDT, assumed the same as LM 	
+					// Diagnosis by RDT, assumed the same as LM
 
 					if (theta.MSAT1_RDT_PCR == 1)
 					{
@@ -1432,7 +1454,7 @@ void Intervention::distribute(double t, Params& theta, Population& POP)
 
 
 					////////////////////////////////////////////////
-					// Diagnosis by PCR 	
+					// Diagnosis by PCR
 
 					if (theta.MSAT1_RDT_PCR == 2)
 					{
@@ -1453,7 +1475,7 @@ void Intervention::distribute(double t, Params& theta, Population& POP)
 
 						POP.people[n].PQ_treat = 1;
 						POP.people[n].G6PD_test = 0;
-						
+
 						/////////////////////////////////////////////////////////////////////
 						// Exclude PQ because of young age
 
@@ -1521,7 +1543,7 @@ void Intervention::distribute(double t, Params& theta, Population& POP)
 						/////////////////////////////////////////////////////////////////////
 						// Was there PQ overtreatment?
 
-						if ((POP.people[n].PQ_treat == 1) && (POP.people[n].Hyp == 0))
+						if ((POP.people[n].PQ_treat == 1) && (POP.people[n].Hyp_Pre_Enrollment == 0 && POP.people[n].Hyp_Post_Enrollment == 0))
 						{
 							POP.people[n].PQ_overtreat = 1;
 						}
@@ -1579,9 +1601,20 @@ void Intervention::distribute(double t, Params& theta, Population& POP)
 
 						if ((POP.people[n].PQ_treat == 1) && (POP.people[n].PQ_effective == 1))
 						{
-							POP.people[n].Hyp = 0;                                  // Hypnozoites cleared
+							// POP.people[n].Hyp = 0;                                  // Hypnozoites cleared
+							if(POP.people[n].PQ_stratum == 1)
+							{
+								POP.people[n].Hyp_Pre_Enrollment -= ignbin(POP.people[n].Hyp_Pre_Enrollment, theta.CM_PQ_eff_stratum_1);
+								POP.people[n].Hyp_Post_Enrollment -= ignbin(POP.people[n].Hyp_Post_Enrollment, theta.CM_PQ_eff_stratum_1);
+							}
+							if(POP.people[n].PQ_stratum == 2)
+							{
+								POP.people[n].Hyp_Pre_Enrollment -= ignbin(POP.people[n].Hyp_Pre_Enrollment, theta.CM_PQ_eff_stratum_2);
+								POP.people[n].Hyp_Post_Enrollment -= ignbin(POP.people[n].Hyp_Post_Enrollment, theta.CM_PQ_eff_stratum_2);
+							}
 
-							POP.people[n].AQ8_proph = 1;                            // Put under prophylaxis 
+
+							POP.people[n].AQ8_proph = 1;                            // Put under prophylaxis
 							POP.people[n].AQ8_proph_timer = theta.MSAT1_PQ_proph;    // Timer for prophylaxis set
 
 							// Developing liver hepatic stages killed
@@ -1669,7 +1702,7 @@ void Intervention::distribute(double t, Params& theta, Population& POP)
 
 
 					////////////////////////////////////////////////
-					// Diagnosis by RDT, assumed the same as LM 	
+					// Diagnosis by RDT, assumed the same as LM
 
 					if (theta.MSAT2_RDT_PCR == 1)
 					{
@@ -1684,7 +1717,7 @@ void Intervention::distribute(double t, Params& theta, Population& POP)
 
 
 					////////////////////////////////////////////////
-					// Diagnosis by PCR 	
+					// Diagnosis by PCR
 
 					if (theta.MSAT2_RDT_PCR == 2)
 					{
@@ -1767,7 +1800,18 @@ void Intervention::distribute(double t, Params& theta, Population& POP)
 
 							if ((POP.people[n].PQ_treat == 1) && (POP.people[n].PQ_effective == 1))
 							{
-								POP.people[n].Hyp = 0;
+								// POP.people[n].Hyp = 0;
+								if(POP.people[n].PQ_stratum == 1)
+								{
+									POP.people[n].Hyp_Pre_Enrollment -= ignbin(POP.people[n].Hyp_Pre_Enrollment, theta.CM_PQ_eff_stratum_1);
+									POP.people[n].Hyp_Post_Enrollment -= ignbin(POP.people[n].Hyp_Post_Enrollment, theta.CM_PQ_eff_stratum_1);
+								}
+								if(POP.people[n].PQ_stratum == 2)
+								{
+									POP.people[n].Hyp_Pre_Enrollment -= ignbin(POP.people[n].Hyp_Pre_Enrollment, theta.CM_PQ_eff_stratum_2);
+									POP.people[n].Hyp_Post_Enrollment -= ignbin(POP.people[n].Hyp_Post_Enrollment, theta.CM_PQ_eff_stratum_2);
+								}
+
 
 								POP.people[n].AQ8_proph = 1;
 								POP.people[n].AQ8_proph_timer = theta.MSAT2_PQ_proph;
@@ -1776,7 +1820,7 @@ void Intervention::distribute(double t, Params& theta, Population& POP)
 							/////////////////////////////////////////////////////////////////////
 							// Was there PQ overtreatment?
 
-							if ((POP.people[n].PQ_treat == 1) && (POP.people[n].Hyp == 0))
+							if ((POP.people[n].PQ_treat == 1) && (POP.people[n].Hyp_Pre_Enrollment == 0 && POP.people[n].Hyp_Post_Enrollment == 0))
 							{
 								POP.people[n].PQ_overtreat = 1;
 							}
@@ -1888,7 +1932,7 @@ void Intervention::distribute(double t, Params& theta, Population& POP)
 							/////////////////////////////////////////////////////////////////////
 							// Was there PQ overtreatment?
 
-							if ((POP.people[n].PQ_treat == 1) && (POP.people[n].Hyp == 0))
+							if ((POP.people[n].PQ_treat == 1) && (POP.people[n].Hyp_Pre_Enrollment == 0 && POP.people[n].Hyp_Post_Enrollment == 0))
 							{
 								POP.people[n].PQ_overtreat = 1;
 							}
@@ -1898,11 +1942,11 @@ void Intervention::distribute(double t, Params& theta, Population& POP)
 								POP.people[n].PQ_overtreat_9m = 1;
 							}
 
-							
+
 							/////////////////////////////////////////////////////////////////////
 							// Was there TQ overtreatment?
 
-							if ((POP.people[n].TQ_treat == 1) && (POP.people[n].Hyp == 0))
+							if ((POP.people[n].TQ_treat == 1) && (POP.people[n].Hyp_Pre_Enrollment == 0 && POP.people[n].Hyp_Post_Enrollment == 0))
 							{
 								POP.people[n].TQ_overtreat = 1;
 							}
@@ -1965,9 +2009,20 @@ void Intervention::distribute(double t, Params& theta, Population& POP)
 
 						if ((POP.people[n].PQ_treat == 1) && (POP.people[n].PQ_effective == 1))
 						{
-							POP.people[n].Hyp = 0;                                  // Hypnozoites cleared
+							// POP.people[n].Hyp = 0;                                  // Hypnozoites cleared
+							if(POP.people[n].PQ_stratum == 1)
+							{
+								POP.people[n].Hyp_Pre_Enrollment -= ignbin(POP.people[n].Hyp_Pre_Enrollment, theta.CM_PQ_eff_stratum_1);
+								POP.people[n].Hyp_Post_Enrollment -= ignbin(POP.people[n].Hyp_Post_Enrollment, theta.CM_PQ_eff_stratum_1);
+							}
+							if(POP.people[n].PQ_stratum == 2)
+							{
+								POP.people[n].Hyp_Pre_Enrollment -= ignbin(POP.people[n].Hyp_Pre_Enrollment, theta.CM_PQ_eff_stratum_2);
+								POP.people[n].Hyp_Post_Enrollment -= ignbin(POP.people[n].Hyp_Post_Enrollment, theta.CM_PQ_eff_stratum_2);
+							}
 
-							POP.people[n].AQ8_proph = 1;                            // Put under prophylaxis 
+
+							POP.people[n].AQ8_proph = 1;                            // Put under prophylaxis
 							POP.people[n].AQ8_proph_timer = theta.MSAT2_PQ_proph;    // Timer for prophylaxis set
 
 							// Developing liver hepatic stages killed
@@ -1988,9 +2043,10 @@ void Intervention::distribute(double t, Params& theta, Population& POP)
 
 						if ((POP.people[n].TQ_treat == 1) && (POP.people[n].TQ_effective == 1))
 						{
-							POP.people[n].Hyp = 0;                                  // Hypnozoites cleared
+							POP.people[n].Hyp_Pre_Enrollment = 0;                                  // Hypnozoites cleared
+							POP.people[n].Hyp_Post_Enrollment = 0;                                  // Hypnozoites cleared
 
-							POP.people[n].AQ8_proph = 1;                            // Put under prophylaxis 
+							POP.people[n].AQ8_proph = 1;                            // Put under prophylaxis
 							POP.people[n].AQ8_proph_timer = theta.MSAT2_TQ_proph;    // Timer for prophylaxis set
 
 							// Developing liver hepatic stages killed
@@ -2005,7 +2061,7 @@ void Intervention::distribute(double t, Params& theta, Population& POP)
 							}
 
 						}
-						
+
 					}
 
 				}
@@ -2069,14 +2125,14 @@ void Intervention::distribute(double t, Params& theta, Population& POP)
 					/////////////////////////////////////////////////////////////////////
 					// SSAT screening for blood-stage infection in the last 9 months
 					//
-					// There are two options here. Option 1 define over-treatment on the 
+					// There are two options here. Option 1 define over-treatment on the
 					// basis of blood-stage infection with the last 9 month. Option 2
 					// defines over-treatment on the basis of presence of hypnozoites.
 
 					STAT_pos = 0;
 
 					// OPTION 1
-					
+
 					if( (POP.people[n].T_last_BS <= 270.0) && (genunf(0.0, 1.0) < theta.STAT1_sens) )
 					{
 						STAT_pos = 1;
@@ -2086,7 +2142,7 @@ void Intervention::distribute(double t, Params& theta, Population& POP)
 					{
 						STAT_pos = 1;
 					}
-					
+
 
 					// OPTION 2
 					/*
@@ -2206,7 +2262,7 @@ void Intervention::distribute(double t, Params& theta, Population& POP)
 						/////////////////////////////////////////////////////////////////////
 						// Was there PQ overtreatment?
 
-						if ((POP.people[n].PQ_treat == 1) && (POP.people[n].Hyp == 0))
+						if ((POP.people[n].PQ_treat == 1) && (POP.people[n].Hyp_Pre_Enrollment == 0 && POP.people[n].Hyp_Post_Enrollment == 0))
 						{
 							POP.people[n].PQ_overtreat = 1;
 						}
@@ -2265,9 +2321,20 @@ void Intervention::distribute(double t, Params& theta, Population& POP)
 
 						if ((POP.people[n].PQ_treat == 1) && (POP.people[n].PQ_effective == 1))
 						{
-							POP.people[n].Hyp = 0;                                  // Hypnozoites cleared
+							// POP.people[n].Hyp = 0;                                  // Hypnozoites cleared
+							if(POP.people[n].PQ_stratum == 1)
+							{
+								POP.people[n].Hyp_Pre_Enrollment -= ignbin(POP.people[n].Hyp_Pre_Enrollment, theta.CM_PQ_eff_stratum_1);
+								POP.people[n].Hyp_Post_Enrollment -= ignbin(POP.people[n].Hyp_Post_Enrollment, theta.CM_PQ_eff_stratum_1);
+							}
+							if(POP.people[n].PQ_stratum == 2)
+							{
+								POP.people[n].Hyp_Pre_Enrollment -= ignbin(POP.people[n].Hyp_Pre_Enrollment, theta.CM_PQ_eff_stratum_2);
+								POP.people[n].Hyp_Post_Enrollment -= ignbin(POP.people[n].Hyp_Post_Enrollment, theta.CM_PQ_eff_stratum_2);
+							}
 
-							POP.people[n].AQ8_proph = 1;                            // Put under prophylaxis 
+
+							POP.people[n].AQ8_proph = 1;                            // Put under prophylaxis
 							POP.people[n].AQ8_proph_timer = theta.STAT1_PQ_proph;    // Timer for prophylaxis set
 
 							// Developing liver hepatic stages killed
@@ -2351,14 +2418,14 @@ void Intervention::distribute(double t, Params& theta, Population& POP)
 					/////////////////////////////////////////////////////////////////////
 					// SSAT screening for blood-stage infection in the last 9 months
 					//
-					// There are two options here. Option 1 define over-treatment on the 
+					// There are two options here. Option 1 define over-treatment on the
 					// basis of blood-stage infection with the last 9 month. Option 2
 					// defines over-treatment on the basis of presence of hypnozoites.
 
 					STAT_pos = 0;
 
 					// OPTION 1
-					
+
 					if( (POP.people[n].T_last_BS <= 270.0) && (genunf(0.0, 1.0) < theta.STAT2_sens) )
 					{
 						STAT_pos = 1;
@@ -2368,7 +2435,7 @@ void Intervention::distribute(double t, Params& theta, Population& POP)
 					{
 						STAT_pos = 1;
 					}
-					
+
 
 					// OPTION 2
 					/*
@@ -2485,7 +2552,7 @@ void Intervention::distribute(double t, Params& theta, Population& POP)
 							/////////////////////////////////////////////////////////////////////
 							// Was there PQ overtreatment?
 
-							if ((POP.people[n].PQ_treat == 1) && (POP.people[n].Hyp == 0))
+							if ((POP.people[n].PQ_treat == 1) && (POP.people[n].Hyp_Pre_Enrollment == 0 && POP.people[n].Hyp_Post_Enrollment == 0))
 							{
 								POP.people[n].PQ_overtreat = 1;
 							}
@@ -2597,7 +2664,7 @@ void Intervention::distribute(double t, Params& theta, Population& POP)
 							/////////////////////////////////////////////////////////////////////
 							// Was there PQ overtreatment?
 
-							if ((POP.people[n].PQ_treat == 1) && (POP.people[n].Hyp == 0))
+							if ((POP.people[n].PQ_treat == 1) && (POP.people[n].Hyp_Pre_Enrollment == 0 && POP.people[n].Hyp_Post_Enrollment == 0))
 							{
 								POP.people[n].PQ_overtreat = 1;
 							}
@@ -2610,7 +2677,7 @@ void Intervention::distribute(double t, Params& theta, Population& POP)
 							/////////////////////////////////////////////////////////////////////
 							// Was there TQ overtreatment?
 
-							if ((POP.people[n].TQ_treat == 1) && (POP.people[n].Hyp == 0))
+							if ((POP.people[n].TQ_treat == 1) && (POP.people[n].Hyp_Pre_Enrollment == 0 && POP.people[n].Hyp_Post_Enrollment == 0))
 							{
 								POP.people[n].TQ_overtreat = 1;
 							}
@@ -2643,7 +2710,7 @@ void Intervention::distribute(double t, Params& theta, Population& POP)
 								POP.people[n].CQ_effective = 1;
 							}
 						}
-						
+
 						if (POP.people[n].TQ_treat == 1)
 						{
 							POP.people[n].CQ_effective = 1;
@@ -2674,9 +2741,20 @@ void Intervention::distribute(double t, Params& theta, Population& POP)
 
 						if ((POP.people[n].PQ_treat == 1) && (POP.people[n].PQ_effective == 1))
 						{
-							POP.people[n].Hyp = 0;                                  // Hypnozoites cleared
+							// POP.people[n].Hyp = 0;                                  // Hypnozoites cleared
+							if(POP.people[n].PQ_stratum == 1)
+							{
+								POP.people[n].Hyp_Pre_Enrollment -= ignbin(POP.people[n].Hyp_Pre_Enrollment, theta.CM_PQ_eff_stratum_1);
+								POP.people[n].Hyp_Post_Enrollment -= ignbin(POP.people[n].Hyp_Post_Enrollment, theta.CM_PQ_eff_stratum_1);
+							}
+							if(POP.people[n].PQ_stratum == 2)
+							{
+								POP.people[n].Hyp_Pre_Enrollment -= ignbin(POP.people[n].Hyp_Pre_Enrollment, theta.CM_PQ_eff_stratum_2);
+								POP.people[n].Hyp_Post_Enrollment -= ignbin(POP.people[n].Hyp_Post_Enrollment, theta.CM_PQ_eff_stratum_2);
+							}
 
-							POP.people[n].AQ8_proph = 1;                            // Put under prophylaxis 
+
+							POP.people[n].AQ8_proph = 1;                            // Put under prophylaxis
 							POP.people[n].AQ8_proph_timer = theta.STAT2_PQ_proph;    // Timer for prophylaxis set
 
 							// Developing liver hepatic stages killed
@@ -2697,9 +2775,10 @@ void Intervention::distribute(double t, Params& theta, Population& POP)
 
 						if ((POP.people[n].TQ_treat == 1) && (POP.people[n].TQ_effective == 1))
 						{
-							POP.people[n].Hyp = 0;                                  // Hypnozoites cleared
+							POP.people[n].Hyp_Pre_Enrollment = 0;                                  // Hypnozoites cleared
+							POP.people[n].Hyp_Post_Enrollment = 0;                                  // Hypnozoites cleared
 
-							POP.people[n].AQ8_proph = 1;                            // Put under prophylaxis 
+							POP.people[n].AQ8_proph = 1;                            // Put under prophylaxis
 							POP.people[n].AQ8_proph_timer = theta.STAT2_TQ_proph;    // Timer for prophylaxis set
 
 							// Developing liver hepatic stages killed
@@ -2763,14 +2842,14 @@ void Intervention::distribute(double t, Params& theta, Population& POP)
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////// 
-//         //                                                                            // 
+///////////////////////////////////////////////////////////////////////////////////////////
+//         //                                                                            //
 //  3.2.4. //  Inverse of the cumulative normal distribution function required           //
 //         //  for implementing correlated intervention coverage.                        //
 /////////////                                                                            //
 /////////////  The code is based on the following website                                //
 /////////////  http://www.johndcook.com/blog/cpp_phi_inverse/                            //
-/////////////  which is based the algorithm in Abramowitz and Stegun formula 26.2.23.    // 
+/////////////  which is based the algorithm in Abramowitz and Stegun formula 26.2.23.    //
 /////////////                                                                            //
 /////////////  The absolute value of the error should be less than 4.5 e-4 and it tests  //
 /////////////  out nicely in R.                                                          //
@@ -2814,4 +2893,3 @@ double phi_inv(double pp, double mu, double sigma)
 
 	return mu + sigma * temp;
 }
-

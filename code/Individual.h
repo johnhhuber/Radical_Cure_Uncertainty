@@ -131,6 +131,13 @@ public:
 	int Hyp_Pre_Enrollment; 				// Number of batches of hypnozoites from infections prior to enrollment in the trial
 	int Hyp_Post_Enrollment;				// Number of batches of hypnozoites from infections after enrollment in the trial
 
+	vector<int> Hyp_Pre_Enrollment_track; 
+	vector<int> Hyp_Post_Enrollment_track;
+
+	int Hyp_Pre_Enrollment_lag; 
+	int Hyp_Post_Enrollment_lag;
+	
+
 	////////////////////////////////////////////////////
 	// Indicator for competing hazards move
 
@@ -257,6 +264,8 @@ public:
 	// individual if the clinical trial.
 
 	bool enrolled_in_trial;     // is the person currently enrolled in the trial?
+	bool under_observation;		// is the person currently under observation in the trial? 
+	double observation_timer; 	// timer to keep track of amount of time someone has under observation
 	int participant_ID;				// id of participant in trial
 	int enrollment_date;     // date on which the individual was enrolled in the trial
 	int dropout_date;				 // date on which the individual dropped out of the trial

@@ -46,7 +46,7 @@ void Individual::state_mover(Params& theta, double lam_bite)
 	// Track force of infection - it is assumed
 	// 8 AQ prophylaxis prevents new blood-stage infections
 
-	if (AQ8_proph == 0)
+	if (AQ8_proph == 0 & !under_observation)
 	{
 		lam_bite_track.push_back(lam_bite);
 	}
@@ -67,6 +67,15 @@ void Individual::state_mover(Params& theta, double lam_bite)
 
 
 	lam_H_lag = lam_bite_lag + lam_rel_lag;
+
+	Hyp_Pre_Enrollment_track.push_back(Hyp_Pre_Enrollment);
+	Hyp_Pre_Enrollment_track.erase(Hyp_Pre_Enrollment_track.begin());
+
+	Hyp_Post_Enrollment_track.push_back(Hyp_Post_Enrollment);
+	Hyp_Post_Enrollment_track.erase(Hyp_Post_Enrollment_track.begin());
+
+	Hyp_Pre_Enrollment_lag = Hyp_Pre_Enrollment_track[0];
+	Hyp_Post_Enrollment_lag = Hyp_Post_Enrollment_track[0];
 
 
 	///////////////////////////////////
@@ -164,7 +173,7 @@ void Individual::state_mover(Params& theta, double lam_bite)
 					Relapse_PCR_new = 1;
 
 					// simulate whether the relapse occurred from hypnozoites acquired before or after trial enrollment
-					if((Hyp_Pre_Enrollment * 1.0) / (Hyp_Pre_Enrollment + Hyp_Post_Enrollment) > genunf(0.0, 1.0))
+					if((Hyp_Pre_Enrollment_lag * 1.0) / (Hyp_Pre_Enrollment_lag + Hyp_Post_Enrollment_lag) > genunf(0.0, 1.0))
 					{
 						Relapse_Pre_Enrollment = 1;
 					}else{
@@ -221,7 +230,7 @@ void Individual::state_mover(Params& theta, double lam_bite)
 					Relapse_PCR_new = 1;
 
 					// simulate whether the relapse occurred from hypnozoites acquired before or after trial enrollment
-					if((Hyp_Pre_Enrollment * 1.0) / (Hyp_Pre_Enrollment + Hyp_Post_Enrollment) > genunf(0.0, 1.0))
+					if((Hyp_Pre_Enrollment_lag * 1.0) / (Hyp_Pre_Enrollment_lag + Hyp_Post_Enrollment_lag) > genunf(0.0, 1.0))
 					{
 						Relapse_Pre_Enrollment = 1;
 					}else{
@@ -280,7 +289,7 @@ void Individual::state_mover(Params& theta, double lam_bite)
 					Relapse_PCR_new = 1;
 
 					// simulate whether the relapse occurred from hypnozoites acquired before or after trial enrollment
-					if((Hyp_Pre_Enrollment * 1.0) / (Hyp_Pre_Enrollment + Hyp_Post_Enrollment) > genunf(0.0, 1.0))
+					if((Hyp_Pre_Enrollment_lag * 1.0) / (Hyp_Pre_Enrollment_lag + Hyp_Post_Enrollment_lag) > genunf(0.0, 1.0))
 					{
 						Relapse_Pre_Enrollment = 1;
 					}else{
@@ -341,7 +350,7 @@ void Individual::state_mover(Params& theta, double lam_bite)
 					Relapse_PCR_new = 1;
 
 					// simulate whether the relapse occurred from hypnozoites acquired before or after trial enrollment
-					if((Hyp_Pre_Enrollment * 1.0) / (Hyp_Pre_Enrollment + Hyp_Post_Enrollment) > genunf(0.0, 1.0))
+					if((Hyp_Pre_Enrollment_lag * 1.0) / (Hyp_Pre_Enrollment_lag + Hyp_Post_Enrollment_lag) > genunf(0.0, 1.0))
 					{
 						Relapse_Pre_Enrollment = 1;
 					}else{
@@ -438,7 +447,7 @@ void Individual::state_mover(Params& theta, double lam_bite)
 					Relapse_PCR_new = 1;
 
 					// simulate whether the relapse occurred from hypnozoites acquired before or after trial enrollment
-					if((Hyp_Pre_Enrollment * 1.0) / (Hyp_Pre_Enrollment + Hyp_Post_Enrollment) > genunf(0.0, 1.0))
+					if((Hyp_Pre_Enrollment_lag * 1.0) / (Hyp_Pre_Enrollment_lag + Hyp_Post_Enrollment_lag) > genunf(0.0, 1.0))
 					{
 						Relapse_Pre_Enrollment = 1;
 					}else{
@@ -490,7 +499,7 @@ void Individual::state_mover(Params& theta, double lam_bite)
 					Relapse_PCR_new = 1;
 
 					// simulate whether the relapse occurred from hypnozoites acquired before or after trial enrollment
-					if((Hyp_Pre_Enrollment * 1.0) / (Hyp_Pre_Enrollment + Hyp_Post_Enrollment) > genunf(0.0, 1.0))
+					if((Hyp_Pre_Enrollment_lag * 1.0) / (Hyp_Pre_Enrollment_lag + Hyp_Post_Enrollment_lag) > genunf(0.0, 1.0))
 					{
 						Relapse_Pre_Enrollment = 1;
 					}else{
@@ -549,7 +558,7 @@ void Individual::state_mover(Params& theta, double lam_bite)
 					Relapse_PCR_new = 1;
 
 					// simulate whether the relapse occurred from hypnozoites acquired before or after trial enrollment
-					if((Hyp_Pre_Enrollment * 1.0) / (Hyp_Pre_Enrollment + Hyp_Post_Enrollment) > genunf(0.0, 1.0))
+					if((Hyp_Pre_Enrollment_lag * 1.0) / (Hyp_Pre_Enrollment_lag + Hyp_Post_Enrollment_lag) > genunf(0.0, 1.0))
 					{
 						Relapse_Pre_Enrollment = 1;
 					}else{
@@ -609,7 +618,7 @@ void Individual::state_mover(Params& theta, double lam_bite)
 					Relapse_PCR_new = 1;
 
 					// simulate whether the relapse occurred from hypnozoites acquired before or after trial enrollment
-					if((Hyp_Pre_Enrollment * 1.0) / (Hyp_Pre_Enrollment + Hyp_Post_Enrollment) > genunf(0.0, 1.0))
+					if((Hyp_Pre_Enrollment_lag * 1.0) / (Hyp_Pre_Enrollment_lag + Hyp_Post_Enrollment_lag) > genunf(0.0, 1.0))
 					{
 						Relapse_Pre_Enrollment = 1;
 					}else{
@@ -707,7 +716,7 @@ void Individual::state_mover(Params& theta, double lam_bite)
 					Relapse_PCR_new = 1;
 
 					// simulate whether the relapse occurred from hypnozoites acquired before or after trial enrollment
-					if((Hyp_Pre_Enrollment * 1.0) / (Hyp_Pre_Enrollment + Hyp_Post_Enrollment) > genunf(0.0, 1.0))
+					if((Hyp_Pre_Enrollment_lag * 1.0) / (Hyp_Pre_Enrollment_lag + Hyp_Post_Enrollment_lag) > genunf(0.0, 1.0))
 					{
 						Relapse_Pre_Enrollment = 1;
 					}else{
@@ -764,7 +773,7 @@ void Individual::state_mover(Params& theta, double lam_bite)
 					Relapse_PCR_new = 1;
 
 					// simulate whether the relapse occurred from hypnozoites acquired before or after trial enrollment
-					if((Hyp_Pre_Enrollment * 1.0) / (Hyp_Pre_Enrollment + Hyp_Post_Enrollment) > genunf(0.0, 1.0))
+					if((Hyp_Pre_Enrollment_lag * 1.0) / (Hyp_Pre_Enrollment_lag + Hyp_Post_Enrollment_lag) > genunf(0.0, 1.0))
 					{
 						Relapse_Pre_Enrollment = 1;
 					}else{
@@ -826,7 +835,7 @@ void Individual::state_mover(Params& theta, double lam_bite)
 					Relapse_PCR_new = 1;
 
 					// simulate whether the relapse occurred from hypnozoites acquired before or after trial enrollment
-					if((Hyp_Pre_Enrollment * 1.0) / (Hyp_Pre_Enrollment + Hyp_Post_Enrollment) > genunf(0.0, 1.0))
+					if((Hyp_Pre_Enrollment_lag * 1.0) / (Hyp_Pre_Enrollment_lag + Hyp_Post_Enrollment_lag) > genunf(0.0, 1.0))
 					{
 						Relapse_Pre_Enrollment = 1;
 					}else{
@@ -918,7 +927,7 @@ void Individual::state_mover(Params& theta, double lam_bite)
 					Relapse_PCR_new = 1;
 
 					// simulate whether the relapse occurred from hypnozoites acquired before or after trial enrollment
-					if((Hyp_Pre_Enrollment * 1.0) / (Hyp_Pre_Enrollment + Hyp_Post_Enrollment) > genunf(0.0, 1.0))
+					if((Hyp_Pre_Enrollment_lag * 1.0) / (Hyp_Pre_Enrollment_lag + Hyp_Post_Enrollment_lag) > genunf(0.0, 1.0))
 					{
 						Relapse_Pre_Enrollment = 1;
 					}else{
@@ -1256,6 +1265,19 @@ void Individual::ager(Params& theta)
 		}
 	}
 
+
+	//////////////////////////////////////////////////////
+	// Timer for observation period in trial 
+	
+	if(under_observation == 1)
+	{
+		observation_timer = observation_timer - t_step;
+
+		if(observation_timer < 0.0)
+		{
+			under_observation = 0;
+		}
+	}
 
 	//////////////////////////////////////////////////////
 	// Time since last blood-stage infection

@@ -280,6 +280,9 @@ void Population::human_step(Params& theta)
 		{
 			HH.lam_bite_track.push_back(0.0);
 			HH.lam_rel_track.push_back(0.0);
+
+			HH.Hyp_Pre_Enrollment_track.push_back(0);
+			HH.Hyp_Post_Enrollment_track.push_back(0);
 		}
 
 
@@ -321,6 +324,8 @@ void Population::human_step(Params& theta)
 		///////////////////////////////////////////////////
 		// Not enrolled in trial at birth
 		HH.enrolled_in_trial = false;
+		HH.under_observation = 0;
+		HH.observation_timer = -1.0;
 		HH.participant_ID = -999;
 		HH.T_last_Symp_BS = 1000000;
 
@@ -3041,6 +3046,9 @@ void Population::ind_at_equil(Params& theta)
 		for (int k = 0; k < theta.H_track; k++)
 		{
 			HH.lam_rel_track.push_back((HH.Hyp_Pre_Enrollment + HH.Hyp_Post_Enrollment)*theta.ff);
+
+			HH.Hyp_Pre_Enrollment_track.push_back(HH.Hyp_Pre_Enrollment);
+			HH.Hyp_Post_Enrollment_track.push_back(HH.Hyp_Post_Enrollment);
 		}
 
 

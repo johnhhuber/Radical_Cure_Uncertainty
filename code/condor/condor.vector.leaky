@@ -1,0 +1,33 @@
+###########
+#
+############
+
+getenv = True
+universe = vanilla
+
+inDir=data
+dataDir=analysis_1119/vector_control/leaky
+
+executable      = ./script.sh
+arguments       = $(params) $(mosq_1) $(mosq_2) $(interv) $(trial) $(out_particip) $(out_recurr) $(out_trial) $(PROCESS)
+
+initialdir      = vector_control_leaky
+should_transfer_files = yes
+when_to_transfer_output = on_exit
+transfer_input_files = ../$(inDir)/$(dataDir)/model_params/$(params),../$(inDir)/$(dataDir)/mosquito/$(mosq_1),../$(inDir)/$(mosq_2),../$(inDir)/$(interv),../$(inDir)/$(dataDir)/trial_design/$(trial),main.out
+output          = ../job_log/out/out.$(PROCESS)
+error           = ../job_log/err/err.$(PROCESS)
+log             = ../job_log/log/log.$(PROCESS)
+
+request_cpus    = 1
+
+params=model_params_$(PROCESS).txt
+mosq_1=mosquito_$(PROCESS).txt
+mosq_2=occupational_mosquitoes.txt
+interv=intervention_coverage.txt
+trial=trial_design_$(PROCESS).txt
+out_particip=indiv_$(PROCESS).csv
+out_recurr=recurr_$(PROCESS).csv
+out_trial=trial_$(PROCESS).csv
+queue 12800
+

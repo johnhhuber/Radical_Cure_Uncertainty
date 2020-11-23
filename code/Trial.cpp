@@ -75,8 +75,7 @@ void Trial::enrollParticipants(Population& POP, int curr_day)
       itr_eligible->enrollment_date = curr_day;
       itr_eligible->dropout_date = curr_day + trial_duration;
       itr_eligible->G6PD_read = G6PD_read;
-
-      std::cout << num_enrolled << " " << itr_eligible->Relapse_D_new << " " << itr_eligible->Reinfection_D_new << " " << itr_eligible->Hyp_Pre_Enrollment << " " << itr_eligible->Hyp_Post_Enrollment << std::endl;
+      
 
       // if in treatment arm, add in information about PQ stratum
       if(arm_allocation == "TREATMENT")
@@ -105,10 +104,10 @@ void Trial::enrollParticipants(Population& POP, int curr_day)
 
       // create vector in map for recording trial data
       std::vector<std::tuple<int, bool, bool>> individual_LM_recurrent_data;
-      std::vector<std::tuple<int, string>> individual_all_recurrent_data;
+      std::vector<std::tuple<int, string, double, double>> individual_all_recurrent_data;
 
       record_LM_recurrent_infections.insert(std::pair<int, std::vector<std::tuple<int, bool, bool>>>(itr_eligible->participant_ID, individual_LM_recurrent_data));
-      record_all_recurrent_infections.insert(std::pair<int, std::vector<std::tuple<int, string>>>(itr_eligible->participant_ID, individual_all_recurrent_data));
+      record_all_recurrent_infections.insert(std::pair<int, std::vector<std::tuple<int, string, double, double>>>(itr_eligible->participant_ID, individual_all_recurrent_data));
     }
 
     // increment iterator
@@ -229,7 +228,7 @@ void Trial::updateParticipants(Population& POP, Params& theta, int curr_day)
         }
 
         // add to record of all recurrent infections
-        record_all_recurrent_infections.find(participant->participant_ID)->second.push_back(make_tuple(curr_day, infection_type));
+        record_all_recurrent_infections.find(participant->participant_ID)->second.push_back(make_tuple(curr_day, infection_type, participant->Hyp_Pre_Enrollment_lag, participant->Hyp_Post_Enrollment_lag));
       }
 
       // if we have reached end of trial for this individual, they are no longer enrolled
@@ -351,7 +350,7 @@ void Trial::updateParticipants(Population& POP, Params& theta, int curr_day)
         }
 
         // add to record of all recurrent infections
-        record_all_recurrent_infections.find(participant->participant_ID)->second.push_back(make_tuple(curr_day, infection_type));
+        record_all_recurrent_infections.find(participant->participant_ID)->second.push_back(make_tuple(curr_day, infection_type, participant->Hyp_Pre_Enrollment_lag, participant->Hyp_Post_Enrollment_lag));
       }
       // if we have reached end of trial for this individual, they are no longer enrolled
       if(days_since_enrollment == trial_duration)
@@ -381,7 +380,7 @@ void Trial::administerTreatment(Params &theta, Individual *trial_participant, in
   // treatment and vector control interventions only administered upon enrollment
   if(days_since_enrollment == 0)
   {
-    // change the status of the individual to be under observation
+    // // change the status of the individual to be under observation
     trial_participant->under_observation = 1;
     trial_participant->observation_timer = trial_observation_period;
 
@@ -533,16 +532,16 @@ void Trial::writeAllRecurrentInfs()
   file_out.open(output_file_recurrent_infs);
 
   // write the header
-  file_out << "Participant_ID," << "Infection_Date," << "Infection_Type" << std::endl;
+  file_out << "Participant_ID," << "Infection_Date," << "Infection_Type," << "Hyp_Pre_Enrollment_lag," << "Hyp_Post_Enrollment_lag" << std::endl;
 
   // write out the data
-  std::map<int, std::vector<std::tuple<int, string>>>::iterator itr_infs = record_all_recurrent_infections.begin();
+  std::map<int, std::vector<std::tuple<int, string, double, double>>>::iterator itr_infs = record_all_recurrent_infections.begin();
   for(; itr_infs != record_all_recurrent_infections.end(); itr_infs++)
   {
-    std::vector<std::tuple<int, string>>::iterator itr_individual = itr_infs->second.begin();
+    std::vector<std::tuple<int, string, double, double>>::iterator itr_individual = itr_infs->second.begin();
     for(; itr_individual != itr_infs->second.end(); itr_individual++)
     {
-      file_out << itr_infs->first << "," << std::get<0>(*itr_individual) << "," << std::get<1>(*itr_individual) << std::endl;
+      file_out << itr_infs->first << "," << std::get<0>(*itr_individual) << "," << std::get<1>(*itr_individual) << "," << std::get<2>(*itr_individual) << "," << std::get<3>(*itr_individual) << std::endl;
     }
   }
   file_out.close();

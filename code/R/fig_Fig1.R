@@ -1,15 +1,9 @@
-# set working directory
-setwd('~/Dropbox/Radical_Cure_MOA/code/')
-
-# clear existing workspace
-rm(list = ls())
-
 # install necessary packages 
 if(!require(RColorBrewer)){install.packages('RColorBrewer'); library(RColorBrewer)}
 
 # specify path to output files 
-path_output_leaky <- '../output/analysis_1119/eir_vs_heterogeneity/output_files/leaky/'
-path_output_all_or_none <- '../output/analysis_1119/eir_vs_heterogeneity/output_files/all_or_none/'
+path_output_leaky <- '../../output/analysis/eir_vs_heterogeneity/output_files/leaky/efficacy/'
+path_output_all_or_none <- '../../output/analysis/eir_vs_heterogeneity/output_files/all_or_none/efficacy/'
 
 # list all of the output files 
 files_output_leaky <- list.files(path = path_output_leaky, full.names = T, pattern = 'efficacy')
@@ -33,10 +27,10 @@ eff_all_or_none <- lapply(eir_equil, function(eir){sapply(sig_het, function(sig)
                                                                                           probs = c(0.25, 0.50, 0.75))})})
 
 # get the biting propensities to show the distribution
-indiv_0 <- read.csv('../output/analysis_1119/eir_vs_heterogeneity/output_files/leaky/indiv/indiv_0.csv.bz2')
-indiv_1 <- read.csv('../output/analysis_1119/eir_vs_heterogeneity/output_files/leaky/indiv/indiv_200.csv.bz2')
-indiv_2 <- read.csv('../output/analysis_1119/eir_vs_heterogeneity/output_files/leaky/indiv/indiv_400.csv.bz2')
-indiv_3 <- read.csv('../output/analysis_1119/eir_vs_heterogeneity/output_files/leaky/indiv/indiv_600.csv.bz2')
+indiv_0 <- read.csv('../../output/analysis/eir_vs_heterogeneity/output_files/leaky/indiv/indiv_0.csv.bz2')
+indiv_1 <- read.csv('../../output/analysis/eir_vs_heterogeneity/output_files/leaky/indiv/indiv_200.csv.bz2')
+indiv_2 <- read.csv('../../output/analysis/eir_vs_heterogeneity/output_files/leaky/indiv/indiv_400.csv.bz2')
+indiv_3 <- read.csv('../../output/analysis/eir_vs_heterogeneity/output_files/leaky/indiv/indiv_600.csv.bz2')
 
 # generate plot 
 #palette <- pal_material(palette = 'deep-orange', n = 8)(8)[-1]
@@ -45,7 +39,7 @@ palette <- brewer.pal(n = 9, name = 'YlOrRd')
 palette <- palette[c(3,5,7,9)]
 offset <- seq(from = -0.4, to = 0.4, length.out = length(sig_het) * 2)
 
-jpeg(filename = '../output/figs_manuscript/fig_1.jpg', width = 8, height = 5, units = 'in', res = 500)
+jpeg(filename = '../../output/figs/fig_1.jpg', width = 8, height = 5, units = 'in', res = 500)
 par(mar = c(3.6, 3.6, 1.2, 0.8))
 layout(mat = matrix(c(rep(1, 8), 2,3,4,5), nrow = 3, byrow = T))
 plot(NA, NA, type = 'n', axes = F, xlim = c(0.5, length(eir_equil) + 0.5), ylim = c(0, 1),

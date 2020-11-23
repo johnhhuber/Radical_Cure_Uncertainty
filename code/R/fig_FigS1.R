@@ -1,15 +1,9 @@
-# set working directory
-setwd('~/Dropbox/Radical_Cure_MOA/code/')
-
-# clear existing workspace
-rm(list = ls())
-
 # install necessary packages 
 if(!require(ggsci)){install.packages('ggsci'); library(ggsci)}
 
 # specify path to output files 
-path_output_leaky <- '../output/analysis_0930/eir_vs_heterogeneity/output_files/leaky/'
-path_output_all_or_none <- '../output/analysis_0930/eir_vs_heterogeneity/output_files/all_or_none/'
+path_output_leaky <- '../../output/analysis/eir_vs_heterogeneity/output_files/leaky/efficacy/'
+path_output_all_or_none <- '../../output/analysis/eir_vs_heterogeneity/output_files/all_or_none/efficacy/'
 
 # list all of the output files 
 files_output_leaky <- list.files(path = path_output_leaky, full.names = T, pattern = 'efficacy')
@@ -73,7 +67,7 @@ cex = 1.15
 rect_width <- c(-0.5, mean(offset[6:7]), mean(offset[12:13]), 0.5)
 eff_label <- c('Cox', 'Incidence', 'Risk')
 
-jpeg(filename = '../output/figs_manuscript/fig_S1.jpg', width = 8, height = 5, units = 'in', res = 500)
+jpeg(filename = '../../output/figs/fig_S1.jpg', width = 8, height = 5, units = 'in', res = 500)
 par(mar = c(3.6, 3.6, 1.2, 0.8))
 plot(NA, NA, type = 'n', xlim = c(0.5, length(eir_equil) + 0.5), ylim = c(0,1),
      xaxs = 'i', yaxs = 'i', axes = F, xlab = '', ylab = '')

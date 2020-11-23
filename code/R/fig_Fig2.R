@@ -1,17 +1,11 @@
-# set working directory
-setwd('~/Dropbox/Radical_Cure_MOA/code/')
-
-# clear existing workspace
-rm(list = ls())
-
 # install necessary packages
 if(!require(ggsci)){install.packages('ggsci'); library(ggsci)}
 if(!require(RColorBrewer)){install.packages('RColorBrewer'); library(RColorBrewer)}
 if(!require(seqinr)){install.packages('seqinr'); library(seqinr)}
 
 # specify the output path
-path_output_leaky <- '../output/analysis_1119/followup_vs_relapse/output_files/leaky/'
-path_output_all_or_none <- '../output/analysis_1119/followup_vs_relapse/output_files/all_or_none/'
+path_output_leaky <- '../../output/analysis/followup_vs_relapse/output_files/leaky/efficacy/'
+path_output_all_or_none <- '../../output/analysis/followup_vs_relapse/output_files/all_or_none/efficacy/'
 
 # list all of the output files 
 files_output_leaky <- list.files(path = path_output_leaky, full.names = T, pattern = 'efficacy')
@@ -44,8 +38,8 @@ palette <- brewer.pal(n = 9, name = 'YlOrRd')
 palette <- palette[c(9,7,5,3)]
 offset <- seq(from = -0.475, to = 0.475, length.out = 2 * length(ff) * length(trial_duration))
 rect_width <- c(-0.5, mean(offset[8:9]), mean(offset[16:17]), mean(offset[24:25]), 0.5)
-jpeg(filename = '../output/figs_manuscript/fig_2.jpg', width = 7, height = 5, units = 'in', res = 500)
-#layout(mat = matrix(c(rep(1,4), 2,3), nrow = 3, byrow = T))
+
+jpeg(filename = '../../output/figs/fig_2.jpg', width = 7, height = 5, units = 'in', res = 500)
 layout(mat = matrix(c(rep(1,6),rep(c(2,3),2)), nrow = 5, byrow = T))
 par(mar = c(3.3,3.6,1.2,0.8))
 plot(NA, NA, xlim = c(0.5, length(eir_equil) + 0.5), ylim = c(0,1.1), axes = F,

@@ -1,16 +1,10 @@
-# set working directory
-setwd('~/Dropbox/Radical_Cure_MOA/code/')
-
-# clear existing workspace
-rm(list = ls())
-
 # install necessary packages
 if(!require(RColorBrewer)){install.packages('RColorBrewer'); library(RColorBrewer)}
 if(!require(seqinr)){install.packages('seqinr'); library(seqinr)}
 
 # specify the output path
-path_output_leaky <- '../output/analysis_1119/eir_vs_heterogeneity/output_files/leaky'
-path_output_all_or_none <- '../output/analysis_1119/eir_vs_heterogeneity/output_files/all_or_none'
+path_output_leaky <- '../../output/analysis/eir_vs_heterogeneity/output_files/leaky/genotyping/'
+path_output_all_or_none <- '../../output/analysis/eir_vs_heterogeneity/output_files/all_or_none/genotyping/'
 
 # list all of the output files 
 files_output_leaky <- list.files(path = path_output_leaky, full.names = T, pattern = 'genotyping')
@@ -42,7 +36,7 @@ rect_width <- c(-0.5, mean(offset[8:9]), mean(offset[16:17]), mean(offset[24:25]
 
 genotyping_method <- 'time_LM_'
 
-jpeg(filename = '../output/figs_manuscript/fig_4.jpg', width = 8, height = 4, units = 'in', res = 500)
+jpeg(filename = '../../output/figs/fig_4.jpg', width = 8, height = 4, units = 'in', res = 500)
 par(mar = c(4.3, 3.6, 0.8, 0.8))
 plot(NA, NA, xlim = c(0.5, length(eir_equil) + 0.5), ylim = c(0,1.1), axes = F,
      xaxs = 'i', yaxs = 'i', xlab = '', ylab = '')

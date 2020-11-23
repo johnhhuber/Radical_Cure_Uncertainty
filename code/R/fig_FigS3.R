@@ -1,15 +1,9 @@
-# set working directory
-setwd('~/Dropbox/Radical_Cure_MOA/code/')
-
-# clear existing workspace
-rm(list = ls())
-
-# instal necessary packages
+# install necessary packages
 if(!require(ggsci)){install.packages('ggsci'); library(ggsci)}
 
 # specify paths in 
-path_output_leaky <- '../output/analysis_1119/vector_control/output_files/leaky/'
-path_output_all_or_none <- '../output/analysis_1119/vector_control/output_files/all_or_none/'
+path_output_leaky <- '../../output/analysis/vector_control/output_files/leaky/'
+path_output_all_or_none <- '../../output/analysis/vector_control/output_files/all_or_none/'
 
 # list all of the output files
 files_output_leaky <- list.files(path = path_output_leaky, full.names = T, pattern = 'recurrent')
@@ -124,7 +118,7 @@ rectwidth = 0.07
 palette <- head(pal_lancet()(9), n = 4)
 offset <- seq(from = -0.3, to = 0.3, length.out = nrow(scenarios_vector_control) * 2)
 
-jpeg(filename = '../output/figs_manuscript/fig_S3.jpg', width = 8, height = 11, units = 'in', res = 500)
+jpeg(filename = '../../output/figs/fig_S3.jpg', width = 8, height = 11, units = 'in', res = 500)
 layout(mat = matrix(1:4, nrow = 4, ncol = 1))
 par(mar = c(3.3,3.6,1.2,1.1))
 plot(NA, NA, xlim = c(0.5, length(eir_equil) + 0.5), ylim = c(0,1), axes = F,

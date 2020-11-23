@@ -1,9 +1,3 @@
-# set working directory
-setwd('~/Dropbox/Radical_Cure_MOA/code/')
-
-# clear existing workspace
-rm(list = ls())
-
 # install necessary packages
 if(!require(ggsci)){install.packages('ggsci'); library(ggsci)}
 

@@ -1,15 +1,6 @@
-# set working directory
-setwd('~/Dropbox/Radical_Cure_MOA/code/')
-
-# clear existing workspace
-rm(list = ls())
-
-# install necessary packages
-if(!require(ggsci)){install.packages('ggsci'); library(ggsci)}
-
 # specify path to output files 
-path_output_leaky <- '../output/analysis_1119/radical_cure_therapeutic/output_files/leaky/'
-path_output_all_or_none <- '../output/analysis_1119/radical_cure_therapeutic/output_files/all_or_none/'
+path_output_leaky <- '../../output/analysis/radical_cure_therapeutic/output_files/leaky/efficacy/'
+path_output_all_or_none <- '../../output/analysis/radical_cure_therapeutic/output_files/all_or_none/efficacy/'
 
 # list all of the output files 
 files_output_leaky <- list.files(path = path_output_leaky, full.names = T, pattern = 'efficacy')
@@ -36,7 +27,7 @@ eff_all_or_none <- lapply(eir_equil, function(eir){sapply(trial_PQ_proph, functi
 palette <- c('#9A31CD', '#79CDCD')
 offset <- seq(from = -0.25, to = 0.25, length.out = length(trial_PQ_proph) * 2)
 
-jpeg(filename = '../output/figs_manuscript/fig_5.jpg', width = 8, height = 4, units = 'in', res = 500)
+jpeg(filename = '../../output/figs/fig_5.jpg', width = 8, height = 4, units = 'in', res = 500)
 par(mar = c(3.6, 3.6, 0.8, 0.8))
 plot(NA, NA, type = 'n', axes = F, xlim = c(0.5, length(eir_equil) + 0.5), ylim = c(0, 1),
      xlab = '', ylab = '', xaxs = 'i', yaxs = 'i')

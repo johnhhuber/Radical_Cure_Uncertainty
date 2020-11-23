@@ -1,16 +1,10 @@
-# set working directory
-setwd('~/Dropbox/Radical_Cure_MOA/code/')
-
-# clear existing workspace
-rm(list = ls())
-
 # load necessary functions 
 source('functions_input_files.R')
 
 ##### Analysis 1 - How does estimated efficacy vary with EIR and heterogeneity in biting? #####
 
 # specify path out 
-path_out = '../output/analysis_1119/eir_vs_heterogeneity/input_files/'
+path_out = '../../output/analysis/eir_vs_heterogeneity/input_files/'
 
 # specify parameter ranges
 sigma_het <- seq(from = 0, to = 3, by = 1)
@@ -85,7 +79,7 @@ for(ff in 1:nrow(param_sweep))
 ##### Analysis 2 - How does the estimated efficacy vary with relapse rate and the duration of follow-up? #####
 
 # specify path out 
-path_out = '../output/analysis_1119/followup_vs_relapse/input_files/'
+path_out = '../../output/analysis/followup_vs_relapse/input_files/'
 
 # specify parameter ranges 
 EIR_equil <- c(0.1 / 365, 1 / 365, 10 / 365, 100 / 365)
@@ -169,7 +163,7 @@ for(ff in 1:nrow(param_sweep))
 ##### Analysis 3 - How does vector control help to correct biases? ##### 
 
 # specify path out 
-path_out = '../output/analysis_1119/vector_control/input_files/'
+path_out = '../../output/analysis/vector_control/input_files/'
 
 # specify parameter ranges 
 EIR_equil <- c(0.1 / 365, 1 / 365, 10 / 365, 100 / 365)
@@ -260,7 +254,7 @@ for(ff in 1:nrow(param_sweep))
 ###### Analysis 4 - How do the estimated efficacy vary with radical cure therapeutic? #####
 
 # specify path out 
-path_out = '../output/analysis_1119/radical_cure_therapeutic/input_files/'
+path_out = '../../output/analysis/radical_cure_therapeutic/input_files/'
 
 # specify parameter ranges 
 EIR_equil <- c(0.1 / 365, 1 / 365, 10 / 365, 100 / 365)

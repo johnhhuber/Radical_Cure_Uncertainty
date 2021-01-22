@@ -29,11 +29,11 @@ files_output_trial <- list.files(path = paste(path_output, 'trial/', sep = ''), 
 n_sims <- length(files_input_params)
 print(n_sims)
 
-batch_size = round(n_sims / 500)
+batch_size = round(n_sims / 50)
 batches = split(1:n_sims, ceiling(seq_along(1:n_sims) / batch_size))
 
 # loop through and create the necessary files 
-df_final <- foreach(ss = batches[[batch_id]], .combine = rbind, .packages = 'survival') %dopar%{
+df_final <- foreach(ss = batches[[batch_id]], .combine = rbind, .packages = c('survival', 'icenReg')) %dopar%{
   # create temporary dataframe 
   df <- data.frame(param_id = rep(NA, 1),
                    eir_equil = rep(NA, 1),
@@ -49,12 +49,15 @@ df_final <- foreach(ss = batches[[batch_id]], .combine = rbind, .packages = 'sur
                    is_IRS_administered = rep(NA, 1),
                    eff_cph_recurrent_LM = rep(NA, 1),
                    eff_cph_recurrent_PCR = rep(NA, 1),
+                   eff_cph_recurrent_D = rep(NA, 1),
                    eff_cph_any_relapse_LM = rep(NA, 1),
                    eff_cph_any_relapse_PCR = rep(NA, 1),
                    eff_cph_relapse_LM_trial = rep(NA, 1),
                    eff_cph_relapse_PCR_trial = rep(NA, 1),
+                   eff_cph_relapse_D_trial = rep(NA, 1),
                    eff_cph_relapse_LM_all = rep(NA, 1),
                    eff_cph_relapse_PCR_all = rep(NA, 1),
+                   eff_cph_relapse_D_all = rep(NA, 1),
                    eff_incid_recurrent_PCR = rep(NA, 1),
                    eff_incid_recurrent_LM = rep(NA, 1),
                    eff_incid_recurrent_D = rep(NA, 1),
@@ -64,9 +67,15 @@ df_final <- foreach(ss = batches[[batch_id]], .combine = rbind, .packages = 'sur
                    eff_incid_relapse_PCR = rep(NA, 1),
                    eff_incid_relapse_LM = rep(NA, 1),
                    eff_incid_relapse_D = rep(NA, 1),
+                   eff_incid_trial_PCR = rep(NA, 1),
+                   eff_incid_trial_LM = rep(NA, 1),
+                   eff_incid_trial_D = rep(NA, 1),
                    eff_risk_relapse_PCR = rep(NA, 1),
                    eff_risk_relapse_LM = rep(NA, 1),
-                   eff_risk_relapse_D = rep(NA, 1))
+                   eff_risk_relapse_D = rep(NA, 1),
+                   eff_risk_trial_PCR = rep(NA, 1),
+                   eff_risk_trial_LM = rep(NA, 1),
+                   eff_risk_trial_D = rep(NA, 1))
   
   # read in the parameters file 
   model_params <- read.table(file = files_input_params[ss])
@@ -115,18 +124,25 @@ df_final <- foreach(ss = batches[[batch_id]], .combine = rbind, .packages = 'sur
   df$eff_incid_relapse_PCR <- eff_incid['num_relapse_PCR']
   df$eff_incid_relapse_LM <- eff_incid['num_relapse_LM']
   df$eff_incid_relapse_D <- eff_incid['num_relapse_D']
+
+  df$eff_incid_trial_PCR <- eff_incid['num_trial_PCR']
+  df$eff_incid_trial_LM <- eff_incid['num_trial_LM']
+  df$eff_incid_trial_D <- eff_incid['num_trial_D']
   
   # get the cph efficacy calcuations 
-  eff_cph <- calcCoxEff(trial_data)
+  eff_cph <- calcCoxEff(trial_data, days_followup = unique(output_trial$Days_Since_Enrollment))
   
   df$eff_cph_recurrent_LM <- eff_cph['cph_recurrent_LM']
   df$eff_cph_recurrent_PCR <- eff_cph['cph_recurrent_PCR']
+  df$eff_cph_recurrent_D <- eff_cph['cph_recurrent_D']
   df$eff_cph_any_relapse_LM <- eff_cph['cph_any_relapse_LM']
   df$eff_cph_any_relapse_PCR <- eff_cph['cph_any_relapse_PCR']
   df$eff_cph_relapse_LM_trial <- eff_cph['cph_relapse_LM_trial']
   df$eff_cph_relapse_PCR_trial <- eff_cph['cph_relapse_PCR_trial']
+  df$eff_cph_relapse_D_trial <- eff_cph['cph_relapse_D_trial']
   df$eff_cph_relapse_LM_all <- eff_cph['cph_relapse_LM_all']
   df$eff_cph_relapse_PCR_all <- eff_cph['cph_relapse_PCR_all']
+  df$eff_cph_relapse_D_all <- eff_cph['cph_relapse_D_all']
   
   # get the risk-based efficacy calculations 
   eff_risk <- calcRiskEff(trial_data)
@@ -134,6 +150,10 @@ df_final <- foreach(ss = batches[[batch_id]], .combine = rbind, .packages = 'sur
   df$eff_risk_relapse_PCR <- eff_risk['risk_relapse_PCR']
   df$eff_risk_relapse_LM <- eff_risk['risk_relapse_LM']
   df$eff_risk_relapse_D <- eff_risk['risk_relapse_D']
+
+  df$eff_risk_trial_PCR <- eff_risk['risk_trial_PCR']
+  df$eff_risk_trial_LM <- eff_risk['risk_trial_LM']
+  df$eff_risk_trial_D <- eff_risk['risk_trial_D']
   
   # return 
   df

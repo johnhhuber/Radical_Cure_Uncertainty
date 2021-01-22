@@ -1,145 +1,69 @@
-# install necessary packages
-if(!require(ggsci)){install.packages('ggsci'); library(ggsci)}
+# install necessary packages 
+if(!require(RColorBrewer)){install.packages('RColorBrewer'); library(RColorBrewer)}
+if(!require(shape)){install.packages('shape'); library(shape)}
 
-# specify input file paths 
-path_output_leaky <- '../output/analysis_0930/eir_vs_heterogeneity/output_files/leaky/'
-path_output_all_or_none <- '../output/analysis_0930/eir_vs_heterogeneity/output_files/all_or_none/'
+# specify path to output files 
+path_output_leaky <- '../../output/analysis/eir_vs_heterogeneity/output_files/leaky/efficacy/'
+path_output_all_or_none <- '../../output/analysis/eir_vs_heterogeneity/output_files/all_or_none/efficacy/'
 
-# specify parameter ranges
-sigma_het <- seq(from = 0, to = 3, by = 1)
-EIR_equil <- c(0.1, 1, 10, 100)
-n_rep <- 200
+# list all of the output files 
+files_output_leaky <- list.files(path = path_output_leaky, full.names = T, pattern = 'efficacy')
+files_output_all_or_none <- list.files(path = path_output_all_or_none, full.names = T, pattern = 'efficacy')
 
-# construct parameter grid 
-param_sweep <- expand.grid(sigma_het = sigma_het,
-                           EIR_equil = EIR_equil)
+# load the files 
+output_leaky <- lapply(files_output_leaky, function(ff){read.csv(ff)})
+output_efficacy_leaky <- as.data.frame((do.call('rbind', output_leaky)))
 
-param_sweep <- param_sweep[rep(seq_len(nrow(param_sweep)), each  = n_rep), ]
+output_all_or_none <- lapply(files_output_all_or_none, function(ff){read.csv(ff)})
+output_efficacy_all_or_none <- as.data.frame((do.call('rbind', output_all_or_none)))
 
-# get the file indices 
-file_indices <- lapply(EIR_equil, function(eir){lapply(sigma_het, function(sig){which(param_sweep$EIR_equil == eir & param_sweep$sigma_het == sig) - 1})})
+# get the unique eir and sig_het values 
+eir_equil <- sort(unique(output_efficacy_all_or_none$eir_equil))
+sig_het <- sort(unique(output_efficacy_all_or_none$sig_het))
 
-# get the output files and calculate the summary statistics for the recurrent infections 
-stats_reinfection_all <- list()
-stats_reinfection_detectable <- list()
-for(ii in 1:length(file_indices))
-{
-  print(ii)
-
-  prop_recurr_all <- list()
-  prop_recurr_detectable <- list()
-  for(jj in 1:length(file_indices[[ii]]))
-  {
-    
-    print(jj)
-    vec_all <- c()
-    vec_detectable <- c()
-    for(ff in 1:length(file_indices[[ii]][[jj]]))
-    {
-      print(ff)
-      # leaky intervention action 
-      file_name_recurr <- paste(path_output_leaky, 'recurr/recurr_', file_indices[[ii]][[jj]][ff], '.csv.bz2', sep = '')
-      file_name_indiv <- paste(path_output_leaky, 'indiv/indiv_', file_indices[[ii]][[jj]][ff], '.csv.bz2', sep = '')
-      if(file.exists(file_name_recurr))
-      {
-        # load files
-        indiv <- read.csv(file_name_indiv)
-        recurr <- read.csv(file_name_recurr)
-        
-        # get number of participants
-        num_participants <- nrow(indiv)
-        
-        # subset recurrent infection outputs to remove infection that caused enrollment and only to consider reinfection events
-        recurr <- recurr[-match(indiv$Participant_ID, recurr$Participant_ID),]
-        
-        # calculate the proportion of recurrent infections that were detectable 
-        recurr <- subset(recurr, grepl('REINFECTION', Infection_Type))
-        
-        # calculate the proportion reinfected 
-        reinfected <- sapply(indiv$Participant_ID, function(id){id %in% recurr$Participant_ID})
-        vec_all <- c(vec_all, sum(reinfected) / num_participants)
-        
-        # calculate the proportion with a detectable reinfection 
-        detectable <- subset(recurr, !grepl('PCR', Infection_Type))
-        reinfected <- sapply(indiv$Participant_ID, function(id){id %in% detectable$Participant_ID})
-        vec_detectable <- c(vec_detectable, sum(reinfected) / num_participants)
-      }
-      
-      # all-or-none intervention action 
-      file_name_recurr <- paste(path_output_all_or_none, 'recurr/recurr_', file_indices[[ii]][[jj]][ff], '.csv.bz2', sep = '')
-      file_name_indiv <- paste(path_output_all_or_none, 'indiv/indiv_', file_indices[[ii]][[jj]][ff], '.csv.bz2', sep = '')
-      if(file.exists(file_name_recurr))
-      {
-        # load files
-        indiv <- read.csv(file_name_indiv)
-        recurr <- read.csv(file_name_recurr)
-        
-        # subset recurrent infection outputs to remove infection that caused enrollment and only to consider reinfection events
-        recurr <- recurr[-match(indiv$Participant_ID, recurr$Participant_ID),]
-        
-        # calculate the proportion of recurrent infections that were detectable 
-        recurr <- subset(recurr, grepl('REINFECTION', Infection_Type))
-        
-        # calculate the proportion reinfected 
-        reinfected <- sapply(indiv$Participant_ID, function(id){id %in% recurr$Participant_ID})
-        vec_all <- c(vec_all, sum(reinfected) / num_participants)
-        
-        # calculate the proportion with a detectable reinfection 
-        detectable <- subset(recurr, !grepl('PCR', Infection_Type))
-        reinfected <- sapply(indiv$Participant_ID, function(id){id %in% detectable$Participant_ID})
-        vec_detectable <- c(vec_detectable, sum(reinfected) / num_participants)
-      }
-    }
-    prop_recurr_all[[jj]] = vec_all
-    prop_recurr_detectable[[jj]] = vec_detectable
-  }
-  stats_reinfection_all[[ii]] <- prop_recurr_all
-  stats_reinfection_detectable[[ii]] <- prop_recurr_detectable
-}
+# get the efficacies 
+eff_leaky <- lapply(eir_equil, function(eir){sapply(sig_het, function(sig){quantile(output_efficacy_leaky$eff_cph_recurrent_LM[output_efficacy_leaky$sig_het == sig & output_efficacy_leaky$eir_equil == eir],
+                                                                                    probs = c(0.25, 0.50, 0.75))})})
+eff_all_or_none <- lapply(eir_equil, function(eir){sapply(sig_het, function(sig){quantile(output_efficacy_all_or_none$eff_cph_recurrent_LM[output_efficacy_all_or_none$sig_het == sig & output_efficacy_all_or_none$eir_equil == eir],
+                                                                                          probs = c(0.25, 0.50, 0.75))})})
 
 # generate plot 
-palette <- pal_material(palette = 'deep-orange', n = 8)(8)[-1]
-offset <- seq(from = -0.4, to = 0.4, length.out = length(sigma_het) * 2)
+palette <- brewer.pal(n = 9, name = 'YlOrRd')
+palette <- palette[c(3,5,7,9)]
+offset <- seq(from = -0.4, to = 0.4, length.out = 2 * length(sig_het))
 
-jpeg(filename = '../output/figs_manuscript/fig_S4.jpg', width = 8, height = 5, units = 'in', res = 500)
+jpeg(filename = '../../output/figs/fig_S4.jpg', width = 8, height = 5, units = 'in', res = 500)
 par(mar = c(3.6, 3.6, 0.8, 0.8))
-plot(NA, NA, xlim = c(0.5, length(EIR_equil) + 0.5), ylim = c(-0.02,1), axes = F,
+plot(NA, NA, type = 'n', axes = F, xlim = c(0.5, length(eir_equil) + 0.5), ylim = c(0, 1),
      xlab = '', ylab = '', xaxs = 'i', yaxs = 'i')
-for(ee in 1:length(EIR_equil))
+abline(h = 0.75, lwd = 1, lty = 2)
+abline(v = seq(from = 0.5, to = length(eir_equil) + 0.5, by = 1), col = '#222222')
+for(ee in 1:length(eir_equil))
 {
-  for(ss in 1:length(sigma_het))
+  for(ss in 1:length(sig_het))
   {
+    segments(x0 = ee + offset[1 + 2 * (ss-1)], y0 = eff_all_or_none[[ee]][1,ss], y1 = eff_all_or_none[[ee]][3,ss], col = palette[ss], lwd = 1.5)
+    points(ee + offset[1 + 2 * (ss - 1)], eff_all_or_none[[ee]][2,ss], pch = 16, cex = 1.5, col = palette[ss])
     
-    quantiles_all = quantile(stats_reinfection_all[[ee]][[ss]], probs = c(0.25, 0.50, 0.75))
-    segments(x0 = ee + offset[1 + 2 * (ss-1)], y0 = quantiles_all[1], y1 = quantiles_all[3], col = palette[ss], lwd = 2)
-    points(ee + offset[1 + 2 * (ss - 1)], quantiles_all[2], pch = 15, cex = 1.5, col = palette[ss])
-    
-    quantiles_detect = quantile(stats_reinfection_detectable[[ee]][[ss]], probs = c(0.25, 0.50, 0.75))
-    segments(x0 = ee + offset[2 + 2 * (ss-1)], y0 = quantiles_detect[1], y1 = quantiles_detect[3], col = palette[ss], lwd = 2)
-    points(ee + offset[2 + 2 * (ss - 1)], quantiles_detect[2], pch = 16, cex = 1.5, col = palette[ss])
+    segments(x0 = ee + offset[2 + 2 * (ss-1)], y0 = eff_leaky[[ee]][1,ss], y1 = eff_leaky[[ee]][3,ss], col = palette[ss], lwd = 1.5)
+    points(ee + offset[2 + 2 * (ss - 1)], eff_leaky[[ee]][2,ss], pch = 17, cex = 1.5, col = palette[ss])
   }
 }
-abline(v = seq(from = 0.5, to = length(EIR_equil) + 0.5, by = 1))
 box()
-axis(side = 1, at = 1:length(EIR_equil), labels = EIR_equil)
-axis(side = 2, las = 1, at = seq(from = 0, to = 1, by = 0.2), labels = seq(from = 0, to = 100, by = 20))
+axis(side = 1, at = 1:length(eir_equil), labels = eir_equil)
+axis(side = 2, las = 1)
 mtext(side = 1, line = 2.3, 'EIR')
-mtext(side = 2, line = 2.3, 'Percentage of Trial Participants')
-legend('topleft', pch = c(15,16),
-       col = '#222222',
-       cex = 0.8,
-       legend = c('Any Reinfection', 'Detectable Reinfection'),
-       bty = 'n', pt.cex = 1.5)
+mtext(side = 2, line = 2.3, 'Efficacy')
 
-legend(x = 0.5, y = 0.875, pch = 15,
-       ncol = length(palette),
-       col = palette,
-       legend = sigma_het,
-       title = 'Heterogeneity in Biting:',
-       xjust = 0,
-       cex = 0.8,
-       title.adj = 0.05,
-       bty = 'n', pt.cex = 1.5)
+legend(x = 0.5, y = 0.375,
+       lwd = c(NA, NA, 1,rep(NA, length(palette))), col = c('#222222','#222222','#222222', palette),
+       lty = c(NA, NA, 2,rep(NA, length(palette))),
+       pch = c(1,2,NA, rep(15, length(palette))),
+       legend = c('All-or-None','Leaky','Clearance Probability', '', '', '', ''),
+       bty = 'n', pt.cex = 1.5, cex = 0.8)
+Arrows(x0 = 0.675, x1 = 0.675, y0 = 0.23, y1 = 0.0975, arr.type="triangle",
+       arr.length = 0.15, arr.width = 0.1)
+text(x = 0.70, y = (0.23 + 0.0975)/2, 'Greater Heterogeneity',
+     pos = 4, offset = 0, cex = 0.8)
+
 dev.off()
-
-

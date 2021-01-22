@@ -1,5 +1,5 @@
 # install necessary functions 
-if(!require(survival)){install.packages('survival'); library(survival)}
+require(icenReg)
 
 # function to count the number of recurrent infections of a specific type 
 countRecurrentInfs <- function(output_recurrent,
@@ -16,6 +16,73 @@ countRecurrentInfs <- function(output_recurrent,
   
   # return count
   return(nrow(recurrent))
+}
+
+# function to count the number of recurrent infections within the context of a trial 
+countRecurrentInfsTrial <- function(output_recurrent,
+                                    output_trial,
+                                    output_participant,
+                                    participant_id,
+                                    days_left_censored = 32,
+                                    detection_type = 'LM')
+{
+  # subset to not left censory
+  enrollment_date <- output_participant$Enrollment_Date[output_participant$Participant_ID == participant_id]
+  recurrent <- subset(output_recurrent, Participant_ID == participant_id & ((Infection_Date - enrollment_date) > days_left_censored))
+  followup <- subset(output_trial, Participant_ID == participant_id & Days_Since_Enrollment > days_left_censored)
+
+  # count the number of recurrent infections 
+  if(detection_type == 'D')
+  {
+    num_recurrent <- sum(grepl('_D', recurrent$Infection_Type) | grepl('_T', recurrent$Infection_Type))
+  }
+  
+  if(detection_type == 'LM')
+  {
+    # first count the number of times that they tested postive on followup 
+    num_positive_followup <- sum(followup$LM_Infection)
+
+    # calculate the number of symptomatic/treated infections independent of testing during follow-up. In doing so, we avoid double-counting
+    num_symptomatic <-  sum(grepl('_D', recurrent$Infection_Type) | grepl('_T', recurrent$Infection_Type))
+    num_overlap <- 0
+    
+    if(any(followup$LM_Infection))
+    {
+      dates_positive_followup <- followup$Days_Since_Enrollment[followup$LM_Infection == 1] + enrollment_date
+      infection_type_followup <- sapply(dates_positive_followup, function(d){recurrent$Infection_Type[tail(which(recurrent$Infection_Date < d), n = 1)]})
+      infection_type_followup <- unlist(lapply(infection_type_followup, function(l){ifelse(length(l) == 0, NA, l)}))
+      
+      num_overlap <- sum(grepl('_D', infection_type_followup) | grepl('_T', infection_type_followup))
+    }
+    
+    # get the union of the different events 
+    num_recurrent <- num_positive_followup + num_symptomatic - num_overlap
+  }
+  
+  if(detection_type == 'PCR')
+  {
+    # first count the number of times that they tested postive on followup 
+    num_positive_followup <- sum(followup$PCR_Infection)
+    
+    # calculate the number of symptomatic/treated infections independent of testing during follow-up. In doing so, we avoid double-counting
+    num_symptomatic <-  sum(grepl('_D', recurrent$Infection_Type) | grepl('_T', recurrent$Infection_Type))
+    num_overlap <- 0
+    
+    if(any(followup$LM_Infection))
+    {
+      dates_positive_followup <- followup$Days_Since_Enrollment[followup$PCR_Infection == 1] + enrollment_date
+      infection_type_followup <- sapply(dates_positive_followup, function(d){recurrent$Infection_Type[tail(which(recurrent$Infection_Date < d), n = 1)]})
+      infection_type_followup <- unlist(lapply(infection_type_followup, function(l){ifelse(length(l) == 0, NA, l)}))
+      
+      num_overlap <- sum(grepl('_D', infection_type_followup) | grepl('_T', infection_type_followup))
+    }
+    
+    # get the union of the different events 
+    num_recurrent <- num_positive_followup + num_symptomatic - num_overlap
+  }
+  
+  # return output 
+  return(num_recurrent)
 }
 
 # function to determine the timing of the first recurrent infection 
@@ -52,6 +119,14 @@ getTimeFirstRecurrent <- function(output_recurrent,
     {
       day_first_recurrent <- min(day_first_recurrent, min(followup$Days_Since_Enrollment[followup$PCR_Infection == 1]))
     }
+    if(any(grepl('_D', recurrent$Infection_Type) | grepl('_T', recurrent$Infection_Type)))
+    {
+      day_first_recurrent <- min(day_first_recurrent, min(recurrent$Infection_Date[grepl('_D', recurrent$Infection_Type) | grepl('_T', recurrent$Infection_Type)] - enrollment_date))
+    }
+  }
+
+  if(detection_type == 'D')
+  {
     if(any(grepl('_D', recurrent$Infection_Type) | grepl('_T', recurrent$Infection_Type)))
     {
       day_first_recurrent <- min(day_first_recurrent, min(recurrent$Infection_Date[grepl('_D', recurrent$Infection_Type) | grepl('_T', recurrent$Infection_Type)] - enrollment_date))
@@ -102,7 +177,7 @@ getTimeFirstRelapseTrial <- function(output_recurrent,
                                 output_trial,
                                 output_participant,
                                 participant_id,
-                                days_left_censored = 29,
+                                days_left_censored = 32,
                                 detection_type = 'LM',
                                 relapse_type = 'ANY')
 {
@@ -115,6 +190,21 @@ getTimeFirstRelapseTrial <- function(output_recurrent,
   
   # get the timing of the first recurrent infection
   day_first_relapse <- max(followup$Days_Since_Enrollment) + 1
+  if(detection_type == 'D')
+  {
+    if(any(grepl('_D', recurrent_censored$Infection_Type) | grepl('_T', recurrent_censored$Infection_Type)))
+    {
+      if(relapse_type == 'ANY')
+      {
+        day_first_relapse <- min(day_first_relapse, min(recurrent_censored$Infection_Date[(grepl('_D', recurrent_censored$Infection_Type) | grepl('_T', recurrent_censored$Infection_Type)) & grepl('RELAPSE', recurrent_censored$Infection_Type)] - enrollment_date))
+      }
+      if(relapse_type == 'PRE')
+      {
+        day_first_relapse <- min(day_first_relapse, min(recurrent_censored$Infection_Date[(grepl('_D', recurrent_censored$Infection_Type) | grepl('_T', recurrent_censored$Infection_Type)) & grepl('RELAPSE_.*_PRE_ENROLLMENT', recurrent_censored$Infection_Type)] - enrollment_date))
+      }
+    }
+  }
+
   if(detection_type == 'LM')
   {
     if(any(followup$LM_Infection))
@@ -206,20 +296,25 @@ createEffDataFrame <- function(output_participant, # output for the participant 
                    days_enrolled = rep(NA, n_participants),
                    time_recurrent_LM = rep(NA, n_participants),
                    time_recurrent_PCR = rep(NA, n_participants),
+                   time_recurrent_D = rep(NA, n_participants),
                    time_any_relapse_LM = rep(NA, n_participants),
                    time_any_relapse_PCR = rep(NA, n_participants),
                    time_relapse_LM_trial = rep(NA, n_participants),
                    time_relapse_PCR_trial = rep(NA, n_participants),
+                   time_relapse_D_trial = rep(NA, n_participants),
                    time_relapse_LM_all = rep(NA, n_participants),
                    time_relapse_PCR_all = rep(NA, n_participants),
+                   time_relapse_D_all = rep(NA, n_participants),
                    censor_recurrent_LM = rep(NA, n_participants),
                    censor_recurrent_PCR = rep(NA, n_participants),
                    censor_any_relapse_LM = rep(NA, n_participants),
                    censor_any_relapse_PCR = rep(NA, n_participants),
                    censor_relapse_LM_trial = rep(NA, n_participants),
                    censor_relapse_PCR_trial = rep(NA, n_participants),
+                   censor_relapse_D_trial = rep(NA, n_participants),
                    censor_relapse_LM_all = rep(NA, n_participants),
                    censor_relapse_PCR_all = rep(NA, n_participants),
+                   censor_relapse_D_all = rep(NA, n_participants),
                    num_any_PCR = rep(NA, n_participants),
                    num_any_LM = rep(NA, n_participants),
                    num_any_D = rep(NA, n_participants),
@@ -228,7 +323,10 @@ createEffDataFrame <- function(output_participant, # output for the participant 
                    num_any_relapse_D = rep(NA, n_participants),
                    num_relapse_PCR = rep(NA, n_participants),
                    num_relapse_LM = rep(NA, n_participants),
-                   num_relapse_D = rep(NA, n_participants))
+                   num_relapse_D = rep(NA, n_participants),
+                   num_trial_PCR = rep(NA, n_participants),
+                   num_trial_LM = rep(NA, n_participants),
+                   num_trial_D = rep(NA, n_participants))
   
   # add in particpant information 
   df$participant_id <- output_participant$Participant_ID
@@ -289,6 +387,26 @@ createEffDataFrame <- function(output_participant, # output for the participant 
                                                                                output_participant = output_participant,
                                                                                participant_id = x,
                                                                                inf_types = c('RELAPSE_D_PRE_ENROLLMENT', 'RELAPSE_T_PRE_ENROLLMENT'))})
+
+  # get incidence rates in the context of a trial 
+  df$num_trial_PCR <- sapply(df$participant_id, function(x){countRecurrentInfsTrial(output_recurrent = output_recurrent,
+                                                                                    output_trial = output_trial,
+                                                                                    output_participant = output_participant,
+                                                                                    participant_id = x,
+                                                                                    detection_type = 'PCR')})
+
+  df$num_trial_LM <- sapply(df$participant_id, function(x){countRecurrentInfsTrial(output_recurrent = output_recurrent,
+                                                                                    output_trial = output_trial,
+                                                                                    output_participant = output_participant,
+                                                                                    participant_id = x,
+                                                                                    detection_type = 'LM')})
+
+  df$num_trial_D <- sapply(df$participant_id, function(x){countRecurrentInfsTrial(output_recurrent = output_recurrent,
+                                                                                    output_trial = output_trial,
+                                                                                    output_participant = output_participant,
+                                                                                    participant_id = x,
+                                                                                    detection_type = 'D')})
+
   
   # add in information about when they had their first detected recurrent infection 
   df$time_recurrent_LM <- sapply(df$participant_id, function(x){getTimeFirstRecurrent(output_recurrent = output_recurrent,
@@ -301,6 +419,13 @@ createEffDataFrame <- function(output_participant, # output for the participant 
                                                                                        output_participant = output_participant,
                                                                                        participant_id = x,
                                                                                        detection_type = 'PCR')})
+
+  df$time_recurrent_D <- sapply(df$participant_id, function(x){getTimeFirstRecurrent(output_recurrent = output_recurrent,
+                                                                                     output_trial = output_trial,
+                                                                                     output_participant = output_participant,
+                                                                                     participant_id = x,
+                                                                                     detection_type = 'D')})
+
   
   df$time_any_relapse_LM <- sapply(df$participant_id, function(x){getTimeFirstRelapseTrial(output_recurrent = output_recurrent,
                                                                                   output_trial = output_trial,
@@ -329,6 +454,13 @@ createEffDataFrame <- function(output_participant, # output for the participant 
                                                                                        participant_id = x,
                                                                                        detection_type = 'PCR',
                                                                                        relapse_type = 'PRE')})
+
+  df$time_relapse_D_trial <- sapply(df$participant_id, function(x){getTimeFirstRelapseTrial(output_recurrent = output_recurrent,
+                                                                                      output_trial = output_trial,
+                                                                                      output_participant = output_participant,
+                                                                                      participant_id = x,
+                                                                                      detection_type = 'D',
+                                                                                      relapse_type = 'PRE')})
   
   df$time_relapse_LM_all <- sapply(df$participant_id, function(x){getTimeFirstRelapseAll(output_recurrent = output_recurrent,
                                                                                          output_trial = output_trial,
@@ -342,97 +474,47 @@ createEffDataFrame <- function(output_participant, # output for the participant 
                                                                                          participant_id = x,
                                                                                          detection_type = 'PCR')})
   
+  df$time_relapse_D_all <- sapply(df$participant_id, function(x){getTimeFirstRelapseAll(output_recurrent = output_recurrent,
+                                                                                         output_trial = output_trial,
+                                                                                         output_participant = output_participant,
+                                                                                         participant_id = x,
+                                                                                         detection_type = 'D')})
   # determine whether the individual was censored 
-  df$censor_recurrent_LM <- df$censor_recurrent_PCR <- df$censor_any_relapse_LM <- df$censor_any_relapse_PCR <- df$censor_relapse_LM_trial <- df$censor_relapse_PCR_trial <- df$censor_relapse_LM_all <- df$censor_relapse_PCR_all <- 0
+  df$censor_recurrent_LM <- df$censor_recurrent_PCR <- df$censor_recurrent_D <- df$censor_any_relapse_LM <- df$censor_any_relapse_PCR <- df$censor_relapse_LM_trial <- df$censor_relapse_PCR_trial <- df$censor_relapse_D_trial <- df$censor_relapse_LM_all <- df$censor_relapse_PCR_all <- df$censor_relapse_D_all <- 0
   
+
   df$censor_recurrent_LM[df$time_recurrent_LM == (df$days_enrolled + 1)] <- 1
   df$censor_recurrent_PCR[df$time_recurrent_PCR == (df$days_enrolled + 1)] <- 1
+  df$censor_recurrent_D[df$time_recurrent_D == (df$days_enrolled + 1)] <- 1
   df$censor_any_relapse_LM[df$time_any_relapse_LM == (df$days_enrolled + 1)] <- 1
   df$censor_any_relapse_PCR[df$time_any_relapse_PCR == (df$days_enrolled + 1)] <- 1
   df$censor_relapse_LM_trial[df$time_relapse_LM_trial == (df$days_enrolled + 1)] <- 1
   df$censor_relapse_PCR_trial[df$time_relapse_PCR_trial == (df$days_enrolled + 1)] <- 1
+  df$censor_relapse_D_trial[df$time_relapse_D_trial == (df$days_enrolled + 1)] <- 1
   df$censor_relapse_LM_all[df$time_relapse_LM_all == (df$days_enrolled + 1)] <- 1
   df$censor_relapse_PCR_all[df$time_relapse_PCR_all == (df$days_enrolled + 1)] <- 1
+  df$censor_relapse_D_all[df$time_relapse_D_all == (df$days_enrolled + 1)] <- 1
   
   df$time_recurrent_LM[df$censor_recurrent_LM == 1] = df$time_recurrent_LM[df$censor_recurrent_LM == 1] - 1
   df$time_recurrent_PCR[df$censor_recurrent_PCR == 1] = df$time_recurrent_PCR[df$censor_recurrent_PCR == 1] - 1
+  df$time_recurrent_D[df$censor_recurrent_D == 1] = df$time_recurrent_D[df$censor_recurrent_D == 1] - 1
   df$time_any_relapse_LM[df$censor_any_relapse_LM == 1] = df$time_any_relapse_LM[df$censor_any_relapse_LM == 1] - 1
   df$time_any_relapse_PCR[df$censor_any_relapse_PCR == 1] = df$time_any_relapse_PCR[df$censor_any_relapse_PCR == 1] - 1
   df$time_relapse_LM_trial[df$censor_relapse_LM_trial == 1] = df$time_relapse_LM_trial[df$censor_relapse_LM_trial == 1] - 1
   df$time_relapse_PCR_trial[df$censor_relapse_PCR_trial == 1] = df$time_relapse_PCR_trial[df$censor_relapse_PCR_trial == 1] - 1
+  df$time_relapse_D_trial[df$censor_relapse_D_trial == 1] = df$time_relapse_D_trial[df$censor_relapse_D_trial == 1] - 1
   df$time_relapse_LM_all[df$censor_relapse_LM_all == 1] = df$time_relapse_LM_all[df$censor_relapse_LM_all == 1] - 1
   df$time_relapse_PCR_all[df$censor_relapse_PCR_all == 1] = df$time_relapse_PCR_all[df$censor_relapse_PCR_all == 1] - 1
+  df$time_relapse_D_all[df$censor_relapse_D_all == 1] = df$time_relapse_D_all[df$censor_relapse_D_all == 1] - 1
   
   # return data frame 
   return(df)
 }
 
-# function to create survival curve for trial 
-createSurvivalCurve <- function(output_participant, # output for the participant information 
-                                output_recurrent, # output for the recurrent infections 
-                                output_trial) # output for the trial endpoints 
-{
-  # create time vector 
-  t <- 0:max(output_trial$Days_Since_Enrollment)
-  
-  # create data structures for trial participants 
-  treatment_participant_id <- output_participant$Participant_ID[output_participant$Trial_Arm == 'TREATMENT']
-  treatment_arm <- matrix(0, nrow = length(treatment_participant_id), ncol = length(t))
-  
-  placebo_participant_id <- output_participant$Participant_ID[output_participant$Trial_Arm == 'PLACEBO']
-  placebo_arm <- matrix(0, nrow = length(placebo_participant_id), ncol = length(t))
-  
-  # add in indicators for recurrent infections 
-  for(ii in 1:length(treatment_participant_id))
-  {
-    # follow up dates (post day 29)
-    follow_up <- subset(output_trial, Participant_ID == treatment_participant_id[ii] & Days_Since_Enrollment > 29)
-    treatment_arm[ii, follow_up$Days_Since_Enrollment + 1] <- follow_up$LM_Infection
-    
-    # add in recurrent infections - must be symptomatic or treated (post day 29)
-    recurrent <- subset(output_recurrent, Participant_ID == treatment_participant_id[ii] & (grepl('_T', Infection_Type) | grepl('_D', Infection_Type)))
-    recurrent_days_since_enrollment <- recurrent$Infection_Date - output_participant$Enrollment_Date[output_participant$Participant_ID == treatment_participant_id[ii]]
-    
-    treatment_arm[ii, recurrent_days_since_enrollment[recurrent_days_since_enrollment > 29]] <- 1
-    
-    # find first occurrence and set all days to 1 afterwards 
-    if(sum(treatment_arm[ii,]) > 0)
-    {
-      treatment_arm[ii,which(treatment_arm[ii,] >0)[1]:ncol(treatment_arm)] <- 1
-    }
-  }
-  
-  for(ii in 1:length(placebo_participant_id))
-  {
-    # follow up dates (post day 29)
-    follow_up <- subset(output_trial, Participant_ID == placebo_participant_id[ii] & Days_Since_Enrollment > 29)
-    placebo_arm[ii, follow_up$Days_Since_Enrollment + 1] <- follow_up$LM_Infection
-    
-    # add in recurrent infections - must be symptomatic or treated (post day 29)
-    recurrent <- subset(output_recurrent, Participant_ID == placebo_participant_id[ii] & (grepl('_T', Infection_Type) | grepl('_D', Infection_Type)))
-    recurrent_days_since_enrollment <- recurrent$Infection_Date - output_participant$Enrollment_Date[output_participant$Participant_ID == placebo_participant_id[ii]]
-    
-    placebo_arm[ii, recurrent_days_since_enrollment[recurrent_days_since_enrollment > 29]] <- 1
-    
-    # find first occurrence and set all days to 1 afterwards 
-    if(sum(placebo_arm[ii,]) > 0)
-    {
-      placebo_arm[ii,which(placebo_arm[ii,] >0)[1]:ncol(placebo_arm)] <- 1
-    }
-    
-  }
-  
-  # create survival function 
-  treatment_survival <- 1 - (colSums(treatment_arm) / nrow(treatment_arm))
-  placebo_survival <- 1 - (colSums(placebo_arm) / nrow(placebo_arm))
-  
-  # create data frame and return 
-  out <- data.frame(t = t, treatment_survival = treatment_survival, placebo_survival = placebo_survival)
-  return(out)
-}
-
 # function to compute the efficacy measures 
-calcCoxEff <- function(df)
+calcCoxEff <- function(df,
+                       days_followup,
+                       days_left_censored = 32)
 {
   ##### recurrent LM #####
   # data organizaton 
@@ -440,8 +522,17 @@ calcCoxEff <- function(df)
   df_subset$status <- (!df_subset$censor_recurrent_LM) * 1 + 1
   df_subset$trial_arm_num <- ifelse(df_subset$trial_arm == 'TREATMENT', 2, 1)
   
+  # get the updated number of days of follow-up in light of left censoring 
+  days_followup <- c(0, days_followup[days_followup >= days_left_censored])
+  
+  # specify the lower and upper bounds for each interval 
+  df_subset$time_upper_LM <- ifelse(df_subset$censor_recurrent_LM, NA, df_subset$time_recurrent_LM)
+  df_subset$time_lower_LM <- sapply(1:nrow(df_subset), function(i){ifelse(df_subset$censor_recurrent_LM[i], df_subset$time_recurrent_LM[i], tail(days_followup[days_followup < df_subset$time_recurrent_LM[i]], n = 1))})
+  
   # fit cox proportional hazard
-  cph <- coxph(formula = Surv(time_recurrent_LM, status) ~ trial_arm_num, data = df_subset)
+  #cph <- coxph(formula = Surv(time_recurrent_LM, status) ~ trial_arm_num, data = df_subset)
+  #cph <- survreg(formula = Surv(time = df_subset$time_lower_LM, time2 = df_subset$time_upper_LM, type = 'interval2') ~ trial_arm_num, data = df_subset, dist = 'exponential')
+  cph <- ic_sp(Surv(time = df_subset$time_lower_LM, time2 = df_subset$time_upper_LM, type = 'interval2') ~ trial_arm_num, data = df_subset, model = 'ph')
   
   # calcuate efficacy and return
   cph_recurrent_LM <- 1 - exp(as.numeric(cph$coefficients))
@@ -452,11 +543,33 @@ calcCoxEff <- function(df)
   df_subset$status <- (!df_subset$censor_recurrent_PCR) * 1 + 1
   df_subset$trial_arm_num <- ifelse(df_subset$trial_arm == 'TREATMENT', 2, 1)
   
+  # specify the lower and upper bounds for each interval 
+  df_subset$time_upper_PCR <- ifelse(df_subset$censor_recurrent_PCR, NA, df_subset$time_recurrent_PCR)
+  df_subset$time_lower_PCR <- sapply(1:nrow(df_subset), function(i){ifelse(df_subset$censor_recurrent_PCR[i], df_subset$time_recurrent_PCR[i], tail(days_followup[days_followup < df_subset$time_recurrent_PCR[i]], n = 1))})
+  
   # fit cox proportional hazard
-  cph <- coxph(formula = Surv(time_recurrent_PCR, status) ~ trial_arm_num, data = df_subset)
+  #cph <- coxph(formula = Surv(time_recurrent_PCR, status) ~ trial_arm_num, data = df_subset)
+  #cph <- coxph(formula = Surv(time = time_lower_PCR, time2 = time_upper_PCR) ~ trial_arm_num, data = df_subset)
+  cph <- ic_sp(Surv(time = df_subset$time_lower_PCR, time2 = df_subset$time_upper_PCR, type = 'interval2') ~ trial_arm_num, data = df_subset, model = 'ph')
   
   # calcuate efficacy and return
   cph_recurrent_PCR <- 1 - exp(as.numeric(cph$coefficients))
+
+   ##### recurrent D #####
+  # data organizaton 
+  df_subset <- subset(df, time_recurrent_D >= 0)
+  df_subset$status <- (!df_subset$censor_recurrent_D) * 1 + 1
+  df_subset$trial_arm_num <- ifelse(df_subset$trial_arm == 'TREATMENT', 2, 1)
+  
+  # specify the lower and upper bounds for each interval 
+  df_subset$time_upper_D <- ifelse(df_subset$censor_recurrent_D, NA, df_subset$time_recurrent_D)
+  df_subset$time_lower_D <- sapply(1:nrow(df_subset), function(i){ifelse(df_subset$censor_recurrent_D[i], df_subset$time_recurrent_D[i], tail(days_followup[days_followup < df_subset$time_recurrent_D[i]], n = 1))})
+  
+  # fit cox proportional hazard
+  cph <- ic_sp(Surv(time = df_subset$time_lower_D, time2 = df_subset$time_upper_D, type = 'interval2') ~ trial_arm_num, data = df_subset, model = 'ph')
+  
+  # calcuate efficacy and return
+  cph_recurrent_D <- 1 - exp(as.numeric(cph$coefficients))
   
   ##### any relapse LM #####
   # data organizaton 
@@ -505,6 +618,18 @@ calcCoxEff <- function(df)
   
   # calcuate efficacy and return
   cph_relapse_PCR_trial <- 1 - exp(as.numeric(cph$coefficients))
+
+  ##### relapse D trial #####
+  # data organizaton 
+  df_subset <- subset(df, time_relapse_D_trial >= 0)
+  df_subset$status <- (!df_subset$censor_relapse_D_trial) * 1 + 1
+  df_subset$trial_arm_num <- ifelse(df_subset$trial_arm == 'TREATMENT', 2, 1)
+  
+  # fit cox proportional hazard
+  cph <- coxph(formula = Surv(time_relapse_D_trial, status) ~ trial_arm_num, data = df_subset)
+  
+  # calcuate efficacy and return
+  cph_relapse_D_trial <- 1 - exp(as.numeric(cph$coefficients))
   
   ##### relapse LM all #####
   # data organizaton 
@@ -518,7 +643,7 @@ calcCoxEff <- function(df)
   # calcuate efficacy and return
   cph_relapse_LM_all <- 1 - exp(as.numeric(cph$coefficients))
   
-  ##### relapse PCR trial #####
+  ##### relapse PCR all #####
   # data organizaton 
   df_subset <- subset(df, time_relapse_PCR_all >= 0)
   df_subset$status <- (!df_subset$censor_relapse_PCR_all) * 1 + 1
@@ -529,16 +654,31 @@ calcCoxEff <- function(df)
   
   # calcuate efficacy and return
   cph_relapse_PCR_all <- 1 - exp(as.numeric(cph$coefficients))
+
+    ##### relapse D all #####
+  # data organizaton 
+  df_subset <- subset(df, time_relapse_D_all >= 0)
+  df_subset$status <- (!df_subset$censor_relapse_D_all) * 1 + 1
+  df_subset$trial_arm_num <- ifelse(df_subset$trial_arm == 'TREATMENT', 2, 1)
+  
+  # fit cox proportional hazard
+  cph <- coxph(formula = Surv(time_relapse_D_all, status) ~ trial_arm_num, data = df_subset)
+  
+  # calcuate efficacy and return
+  cph_relapse_D_all <- 1 - exp(as.numeric(cph$coefficients))
   
   ### organize into efficacy vector 
   eff <- c(cph_recurrent_LM = cph_recurrent_LM,
            cph_recurrent_PCR = cph_recurrent_PCR,
+           cph_recurrent_D = cph_recurrent_D,
            cph_any_relapse_LM = cph_any_relapse_LM,
            cph_any_relapse_PCR = cph_any_relapse_PCR,
            cph_relapse_LM_trial = cph_relapse_LM_trial,
            cph_relapse_PCR_trial = cph_relapse_PCR_trial,
+           cph_relapse_D_trial = cph_relapse_D_trial,
            cph_relapse_LM_all = cph_relapse_LM_all,
-           cph_relapse_PCR_all = cph_relapse_PCR_all)
+           cph_relapse_PCR_all = cph_relapse_PCR_all,
+           cph_relapse_D_all = cph_relapse_D_all)
 
   return(eff)
 }
@@ -573,6 +713,24 @@ calcRiskEff <- function(df)
   # data organization
   df <- subset(df, time_recurrent_LM >= 0 | time_recurrent_PCR >= 0 | time_any_relapse_LM >= 0 | time_any_relapse_PCR >= 0 | time_relapse_LM_trial >= 0 | time_relapse_PCR_trial >= 0 | time_relapse_LM_all >= 0 | time_relapse_PCR_all >= 0)
   
+  # get the risk efficacy for PCR-detectable recurrent infections 
+  any_event_treatment <- sum(df$num_trial_PCR[df$trial_arm == "TREATMENT"] > 0)
+  any_event_placebo <- sum(df$num_trial_PCR[df$trial_arm == "PLACEBO"] > 0)
+  
+  risk_trial_PCR = 1 - (any_event_treatment / any_event_placebo)
+
+# get the risk efficacy for LM-detectable recurrent infections 
+  any_event_treatment <- sum(df$num_trial_LM[df$trial_arm == "TREATMENT"] > 0)
+  any_event_placebo <- sum(df$num_trial_LM[df$trial_arm == "PLACEBO"] > 0)
+  
+  risk_trial_LM = 1 - (any_event_treatment / any_event_placebo)
+
+  # get the risk efficacy for PCR-detectable recurrent infections 
+  any_event_treatment <- sum(df$num_trial_D[df$trial_arm == "TREATMENT"] > 0)
+  any_event_placebo <- sum(df$num_trial_D[df$trial_arm == "PLACEBO"] > 0)
+  
+  risk_trial_D = 1 - (any_event_treatment / any_event_placebo)
+
   # get the risk efficacy for true PCR-detectabe treatment failures
   any_event_treatment <- sum(df$num_relapse_PCR[df$trial_arm == "TREATMENT"] > 0)
   any_event_placebo <- sum(df$num_relapse_PCR[df$trial_arm == "PLACEBO"] > 0)
@@ -594,7 +752,10 @@ calcRiskEff <- function(df)
   # organize into an efficacy vector and return 
   eff <- c(risk_relapse_PCR = risk_relapse_PCR,
            risk_relapse_LM = risk_relapse_LM,
-           risk_relapse_D = risk_relapse_D)
+           risk_relapse_D = risk_relapse_D,
+           risk_trial_PCR = risk_trial_PCR,
+           risk_trial_LM = risk_trial_LM,
+           risk_trial_D = risk_trial_D)
   
   return(eff)
 }

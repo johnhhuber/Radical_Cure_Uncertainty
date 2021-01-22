@@ -1,102 +1,125 @@
 # install necessary packages
 if(!require(ggsci)){install.packages('ggsci'); library(ggsci)}
+if(!require(RColorBrewer)){install.packages('RColorBrewer'); library(RColorBrewer)}
+if(!require(seqinr)){install.packages('seqinr'); library(seqinr)}
 
 # specify the output path
-path_output_leaky <- '../../output/analysis/vector_control/output_files/leaky/'
-path_output_all_or_none <- '../../output/analysis/vector_control/output_files/all_or_none/'
+path_output_all_or_none <- '../../output/analysis/followup_vs_relapse/output_files/all_or_none/efficacy/'
 
 # list all of the output files 
-files_output_leaky <- list.files(path = path_output_leaky, full.names = T, pattern = 'efficacy')
 files_output_all_or_none <- list.files(path = path_output_all_or_none, full.names = T, pattern = 'efficacy')
 
 # load the files 
-output_leaky <- lapply(files_output_leaky, function(ff){read.csv(ff)})
-output_efficacy_leaky <- as.data.frame((do.call('rbind', output_leaky)))
-
 output_all_or_none <- lapply(files_output_all_or_none, function(ff){read.csv(ff)})
 output_efficacy_all_or_none <- as.data.frame((do.call('rbind', output_all_or_none)))
 
-# specify parameter ranges 
-EIR_equil <- c(0.1 / 365, 1 / 365, 10 / 365, 100 / 365)
-is_LLIN_distributed <- c(0,1)
-is_IRS_administered <- c(0,1)
+# get the unique eirs, relapse rates and trial durations 
+eir_equil <- sort(unique(output_efficacy_all_or_none$eir_equil))
+ff <- rev(sort(unique(output_efficacy_all_or_none$ff)))
+trial_duration <- sort(unique(output_efficacy_all_or_none$trial_duration))
 
-PSI_indoors <- c(0.9, 0.9, 0.9, 0.1)
-PSI_bed <- c(0.9 * 0.5, 0.9 * 0.75, 0.9 * 0.25, 0.1 * 0.5)
+# get the efficacies for the leaky and all or none campaigns 
+eff_all_or_none <- lapply(eir_equil, function(eir){lapply(trial_duration, function(dur){sapply(ff, function(rel){quantile(output_efficacy_all_or_none$eff_cph_recurrent_LM[output_efficacy_all_or_none$eir_equil == eir & output_efficacy_all_or_none$trial_duration == dur &
+                                                                                                                                                                 abs(output_efficacy_all_or_none$ff - rel) < 1e-6], probs = c(0.25, 0.50, 0.75))})})})
 
-# construct parameter grid 
-n_rep <- 200
-param_sweep <- expand.grid(EIR_equil = EIR_equil,
-                           is_LLIN_distributed = is_LLIN_distributed,
-                           is_IRS_administered = is_IRS_administered)
-param_sweep <- param_sweep[rep(seq_len(nrow(param_sweep)), each = length(PSI_indoors)),]
-param_sweep$PSI_indoors <- rep(PSI_indoors, nrow(param_sweep) / length(PSI_indoors))
-param_sweep$PSI_bed <- rep(PSI_bed, nrow(param_sweep) / length(PSI_indoors))
+# specify mosquito-to-human transmission prob
+mosquito_to_human_transmission_prob = 0.5
 
-param_sweep <- param_sweep[rep(seq_len(nrow(param_sweep)), each = n_rep), ]
+# generate plot 
+palette <- brewer.pal(n = 9, name = 'YlOrRd')
+palette <- palette[c(9,7,5,3)]
+offset <- seq(from = -0.475, to = 0.475, length.out = 2 * length(ff) * length(trial_duration))
+rect_width <- c(-0.5, mean(offset[8:9]), mean(offset[16:17]), mean(offset[24:25]), 0.5)
 
-# add in the relevant mosquito parameters 
-output_efficacy_all_or_none$PSI_indoors <- param_sweep[output_efficacy_all_or_none$param_id + 1, 'PSI_indoors']
-output_efficacy_all_or_none$PSI_bed <- param_sweep[output_efficacy_all_or_none$param_id + 1, 'PSI_bed']
-
-output_efficacy_leaky$PSI_indoors <- param_sweep[output_efficacy_leaky$param_id + 1, 'PSI_indoors']
-output_efficacy_leaky$PSI_bed <- param_sweep[output_efficacy_leaky$param_id + 1, 'PSI_bed']
-
-# subset to the default scenario 
-output_efficacy_all_default <- subset(output_efficacy_all_or_none, PSI_indoors == 0.9 & PSI_bed == 0.45)
-output_efficacy_leaky_default <- subset(output_efficacy_leaky, PSI_indoors == 0.9 & PSI_bed == 0.45)
-
-# specify vector control scenarios and range of eir values considered 
-scenarios_vector_control <- data.frame(is_LLIN_distributed = c(0,1,0,1),
-                                       is_IRS_administered = c(0,0,1,1))
-
-eir_equil <- sort(unique(output_efficacy_leaky$eir_equil))
-
-# calculate efficacy
-eff_leaky_default <- lapply(1:nrow(scenarios_vector_control), function(vc){sapply(eir_equil, function(eir){quantile(output_efficacy_leaky_default$eff_cph_recurrent_LM[output_efficacy_leaky_default$eir_equil == eir & 
-                                                                                                                                                                         output_efficacy_leaky_default$is_LLIN_distributed == scenarios_vector_control$is_LLIN_distributed[vc] & 
-                                                                                                                                                                         output_efficacy_leaky_default$is_IRS_administered == scenarios_vector_control$is_IRS_administered[vc]],
-                                                                                                                    probs = c(0.25, 0.50, 0.75))})})
-
-eff_all_default <- lapply(1:nrow(scenarios_vector_control), function(vc){sapply(eir_equil, function(eir){quantile(output_efficacy_all_default$eff_cph_recurrent_LM[output_efficacy_all_default$eir_equil == eir & 
-                                                                                                                                                                     output_efficacy_all_default$is_LLIN_distributed == scenarios_vector_control$is_LLIN_distributed[vc] & 
-                                                                                                                                                                     output_efficacy_all_default$is_IRS_administered == scenarios_vector_control$is_IRS_administered[vc]],
-                                                                                                                  probs = c(0.25, 0.50, 0.75))})})
-# generate plots 
-palette <- head(pal_lancet()(9), n = 4)
-offset <- seq(from = -0.4, to = 0.4, length.out = nrow(scenarios_vector_control) * 2)
-cex = 1.25
-
-jpeg(filename = '../../output/figs/fig_3.jpg', width = 8, height = 4, units = 'in', res = 500)
-par(mar = c(3.6, 3.6, 0.8, 0.8))
-plot(NA, NA, xlim = c(0.5, length(eir_equil) + 0.5), ylim = c(0, 1.0), axes = F, 
+jpeg(filename = '../../output/figs/fig_3.jpg', width = 7, height = 5, units = 'in', res = 500)
+layout(mat = matrix(c(rep(1,6),rep(c(2,3),2)), nrow = 5, byrow = T))
+par(mar = c(3.3,3.6,1.2,0.8))
+plot(NA, NA, xlim = c(0.5, length(eir_equil) + 0.5), ylim = c(0,1.1), axes = F,
      xaxs = 'i', yaxs = 'i', xlab = '', ylab = '')
-abline(h = 0.75, lwd = 1, lty = 2)
-abline(v = seq(from = 0.5, to = length(eir_equil) + 0.5, by = 1), col = '#222222')
 for(ee in 1:length(eir_equil))
 {
-  for(vv in 1:nrow(scenarios_vector_control))
+  for(ss in 1:(length(rect_width) - 1))
   {
-    segments(x0 = ee + offset[1 + 2 * (vv - 1)], y0 = eff_all_default[[vv]][1,ee], y1 = eff_all_default[[vv]][3,ee],
-             lwd = cex, col = palette[vv])
-    points(ee + offset[1 + 2 * (vv - 1)], eff_all_default[[vv]][2,ee], pch = 16, cex = cex, col = palette[vv])
-    
-    segments(x0 = ee + offset[2 + 2 * (vv - 1)], y0 = eff_leaky_default[[vv]][1,ee], y1 = eff_leaky_default[[vv]][3,ee],
-             lwd = cex, col = palette[vv])
-    points(ee + offset[2 + 2 * (vv - 1)], eff_leaky_default[[vv]][2,ee], pch = 17, cex = cex, col = palette[vv])
+    rect(xleft = ee + rect_width[ss], xright = ee + rect_width[ss+1],
+         ybottom = 0, ytop = 1, col = ifelse(ss %% 2 == 0, col2alpha('grey', alpha = 0.325), 'white'), border = NA)
+    text(x = ee + mean(rect_width[ss:(ss+1)]), y = 1.025, trial_duration[ss])
+    text(x = ee, y = 1.075, 'Duration of Follow-up (d)', cex = 0.8)
+    segments(x0 = ee + rect_width[ss+1], y0 = 1, y1 = 1.05)
+  }
+}
+abline(h = c(1,1.05))
+abline(h = 0.75, lwd = 1, lty = 2)
+abline(v = seq(from = 0.5, to = length(eir_equil) + 0.5, by = 1))
+for(ee in 1:length(eir_equil))
+{
+  for(dd in 1:length(trial_duration))
+  {
+    for(rr in 1:length(ff))
+    {
+      mean_offset <- 0.5 * (offset[1 + 8 * (dd-1) + 2 * (rr-1)] + offset[2 + 8 * (dd-1) + 2 * (rr-1)])
+      segments(x0 = ee + mean_offset, y0 = eff_all_or_none[[ee]][[dd]][1,rr],
+               y1 = eff_all_or_none[[ee]][[dd]][3,rr], col = palette[rr], lwd = 1.25)
+      points(ee + mean_offset, eff_all_or_none[[ee]][[dd]][2,rr], pch = 16, cex = 1.25, col = palette[rr])
+    }
   }
 }
 box()
 axis(side = 1, at = 1:length(eir_equil), labels = eir_equil)
 axis(side = 2, las = 1)
+mtext(side = 3, line = 0, at = 0.5, 'A', font = 2, adj = 0, cex = 1)
 mtext(side = 1, line = 2.3, 'EIR')
 mtext(side = 2, line = 2.3, 'Efficacy')
-legend('bottomleft', pch = c(1,2, NA, rep(15,4)), lwd = c(NA, NA, 1, NA, NA, NA, NA),
-       lty = c(NA, NA, 2, NA, NA, NA, NA), pt.cex = cex, col = c('#222222', '#222222', '#222222', palette),
-       legend = c('All-or-None', 'Leaky', 'Hypnozoite Clearance Prob', 'No Vector Control', 'LLINs only', 'IRS only', 'LLINs and IRS'),
-       bty = 'n', cex = 0.675)
+
+par(xpd = T)
+# y = 1.1825
+legend(x = mean(c(0.5, length(eir_equil)+0.5)), y = 1.2,
+       lwd = 1, col = '#222222',
+       lty = 2,
+       legend = 'Clearance Probability',
+       bty = 'n', pt.cex = 1.25, ncol = 1, xjust = 0.5)
+
+par(xpd = F)
+par(mar = c(3.6,3.6,1.8,0.8))
+palette <- (pal_material('orange', n = 10)(10)[c(10, 8, 6, 4)])
+palette <- brewer.pal(n = 9, name = 'YlOrRd')[c(9,7,5,3)]
+plot(NA, NA, xlim = c(0,max(trial_duration)), ylim = c(0,1.0),
+     xaxs = 'i', yaxs = 'i', axes = F, xlab = '', ylab = '')
+for(ii in 1:length(ff))
+{
+  hazard <- rep(ff[ii], max(trial_duration))
+  lines(1:max(trial_duration), (1 - exp(-cumsum(hazard))), col = palette[ii], lwd = 2)
+}
+box()
+axis(side = 1, at = c(0,trial_duration), labels = c(0,trial_duration))
+axis(side = 2, las = 1, at = seq(from = 0, to = 1, by = 0.2), labels = seq(from = 0, to = 100, by = 20))
+mtext(side = 1, line = 2.3, 'Duration of Follow-up (d)', cex = 1)
+mtext(side = 2, line = 2.3, 'Relapsed (%)', cex = 1)
+mtext(side = 3, line = 0, at = 0, 'B', font = 2, adj = 0, cex = 1)
+
+par(xpd = T)
+# y = 1.275
+legend(x = 0.5 * max(trial_duration), y = 1.17, lwd = 2, col = palette, legend = (round(1/ff)), bty = 'n', ncol = length(palette), xjust = 0.5, cex = 1)
+mtext(side = 3, line = 1.2, 'Mean Time to Relapse (d)', cex = 0.9)
+
+par(xpd = F)
+palette <- rev(pal_material('grey', n = 10)(10)[c(10, 7, 5, 4)])
+plot(NA, NA, xlim = c(0, max(trial_duration)), ylim = c(0,1.0),
+     xaxs = 'i', yaxs = 'i', axes = F, xlab = '', ylab = '')
+for(ii in 1:length(eir_equil))
+{  
+  hazard <- rep(eir_equil[ii] / 365, max(trial_duration)) * mosquito_to_human_transmission_prob
+  lines(1:max(trial_duration), 1 - exp(-cumsum(hazard)), col = palette[ii], lwd = 2)
+}
+box()
+axis(side = 1, at = c(0,trial_duration), labels = c(0,trial_duration))
+axis(side = 2, las = 1, at = seq(from = 0, to = 1, by = 0.2), labels = seq(from = 0, to = 100, by = 20))
+mtext(side = 1, line = 2.3, 'Duration of Follow-up (d)', cex = 1)
+mtext(side = 2, line = 2.3, 'Reinfected (%)', cex = 1)
+mtext(side = 3, line = 0, at = 0, 'C', font = 2, adj = 0, cex = 1)
+
+par(xpd = T)
+legend(x = 0.5 * max(trial_duration), y = 1.17, lwd = 2, col = palette, legend = eir_equil, bty = 'n', ncol = length(palette), xjust = 0.5, cex = 1)
+par(xpd = F)
+mtext(side = 3, line = 1.2, 'EIR', cex = 0.9)
 
 dev.off()
-
-
-

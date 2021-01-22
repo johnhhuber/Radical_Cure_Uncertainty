@@ -1,70 +1,54 @@
 # install necessary packages 
-if(!require(ggsci)){install.packages('ggsci'); library(ggsci)}
+if(!require(RColorBrewer)){install.packages('RColorBrewer'); library(RColorBrewer)}
+if(!require(seqinr)){install.packages('seqinr'); library(seqinr)}
 
 # specify path to output files 
-path_output_leaky <- '../../output/analysis/eir_vs_heterogeneity/output_files/leaky/efficacy/'
 path_output_all_or_none <- '../../output/analysis/eir_vs_heterogeneity/output_files/all_or_none/efficacy/'
 
 # list all of the output files 
-files_output_leaky <- list.files(path = path_output_leaky, full.names = T, pattern = 'efficacy')
 files_output_all_or_none <- list.files(path = path_output_all_or_none, full.names = T, pattern = 'efficacy')
 
 # load the files 
-output_leaky <- lapply(files_output_leaky, function(ff){read.csv(ff)})
-output_efficacy_leaky <- as.data.frame((do.call('rbind', output_leaky)))
-
 output_all_or_none <- lapply(files_output_all_or_none, function(ff){read.csv(ff)})
 output_efficacy_all_or_none <- as.data.frame((do.call('rbind', output_all_or_none)))
 
 # get the unique eir and sig_het values 
 eir_equil <- sort(unique(output_efficacy_all_or_none$eir_equil))
 
-# get the efficacies 
-eff_cph_recurrent_LM_leaky <- sapply(eir_equil, function(eir){quantile(output_efficacy_leaky$eff_cph_relapse_LM_all[output_efficacy_leaky$sig_het == 0 & output_efficacy_leaky$eir_equil == eir],
-                                                                                    probs = c(0.25, 0.50, 0.75))})
-eff_cph_recurrent_LM_all_or_none <- sapply(eir_equil, function(eir){quantile(output_efficacy_all_or_none$eff_cph_relapse_LM_all[output_efficacy_all_or_none$sig_het == 0 & output_efficacy_all_or_none$eir_equil == eir],
+# get the efficacies for perfect genotyping 
+eff_cph_relapse_LM_all_or_none <- sapply(eir_equil, function(eir){quantile(output_efficacy_all_or_none$eff_cph_relapse_LM_trial[output_efficacy_all_or_none$sig_het == 0 & output_efficacy_all_or_none$eir_equil == eir],
                                                                                           probs = c(0.25, 0.50, 0.75))})
 
-eff_cph_recurrent_PCR_leaky <- sapply(eir_equil, function(eir){quantile(output_efficacy_leaky$eff_cph_relapse_PCR_all[output_efficacy_leaky$sig_het == 0 & output_efficacy_leaky$eir_equil == eir],
-                                                                       probs = c(0.25, 0.50, 0.75))})
-eff_cph_recurrent_PCR_all_or_none <- sapply(eir_equil, function(eir){quantile(output_efficacy_all_or_none$eff_cph_relapse_PCR_all[output_efficacy_all_or_none$sig_het == 0 & output_efficacy_all_or_none$eir_equil == eir],
+eff_cph_relapse_PCR_all_or_none <- sapply(eir_equil, function(eir){quantile(output_efficacy_all_or_none$eff_cph_relapse_PCR_trial[output_efficacy_all_or_none$sig_het == 0 & output_efficacy_all_or_none$eir_equil == eir],
                                                                              probs = c(0.25, 0.50, 0.75))})
 
-eff_incid_relapse_PCR_leaky <- sapply(eir_equil, function(eir){quantile(output_efficacy_leaky$eff_incid_relapse_PCR[output_efficacy_leaky$sig_het == 0 & output_efficacy_leaky$eir_equil == eir],
-                                                                        probs = c(0.25, 0.50, 0.75))})
+eff_cph_relapse_D_all_or_none <- sapply(eir_equil, function(eir){quantile(output_efficacy_all_or_none$eff_cph_relapse_D_trial[output_efficacy_all_or_none$sig_het == 0 & output_efficacy_all_or_none$eir_equil == eir],
+                                                                            probs = c(0.25, 0.50, 0.75))})
+
 eff_incid_relapse_PCR_all_or_none <- sapply(eir_equil, function(eir){quantile(output_efficacy_all_or_none$eff_incid_relapse_PCR[output_efficacy_all_or_none$sig_het == 0 & output_efficacy_all_or_none$eir_equil == eir],
                                                                               probs = c(0.25, 0.50, 0.75))})
 
-eff_incid_relapse_LM_leaky <- sapply(eir_equil, function(eir){quantile(output_efficacy_leaky$eff_incid_relapse_LM[output_efficacy_leaky$sig_het == 0 & output_efficacy_leaky$eir_equil == eir],
-                                                                            probs = c(0.25, 0.50, 0.75))})
 eff_incid_relapse_LM_all_or_none <- sapply(eir_equil, function(eir){quantile(output_efficacy_all_or_none$eff_incid_relapse_LM[output_efficacy_all_or_none$sig_het == 0 & output_efficacy_all_or_none$eir_equil == eir],
                                                                                   probs = c(0.25, 0.50, 0.75))})
 
-eff_incid_relapse_D_leaky <- sapply(eir_equil, function(eir){quantile(output_efficacy_leaky$eff_incid_relapse_D[output_efficacy_leaky$sig_het == 0 & output_efficacy_leaky$eir_equil == eir],
-                                                                           probs = c(0.25, 0.50, 0.75))})
 eff_incid_relapse_D_all_or_none <- sapply(eir_equil, function(eir){quantile(output_efficacy_all_or_none$eff_incid_relapse_D[output_efficacy_all_or_none$sig_het == 0 & output_efficacy_all_or_none$eir_equil == eir],
                                                                                  probs = c(0.25, 0.50, 0.75))})
 
-eff_risk_relapse_PCR_leaky <- sapply(eir_equil, function(eir){quantile(output_efficacy_leaky$eff_risk_relapse_PCR[output_efficacy_leaky$sig_het == 0 & output_efficacy_leaky$eir_equil == eir],
-                                                                          probs = c(0.25, 0.50, 0.75))})
 eff_risk_relapse_PCR_all_or_none <- sapply(eir_equil, function(eir){quantile(output_efficacy_all_or_none$eff_risk_relapse_PCR[output_efficacy_all_or_none$sig_het == 0 & output_efficacy_all_or_none$eir_equil == eir],
                                                                                 probs = c(0.25, 0.50, 0.75))})
 
-eff_risk_relapse_LM_leaky <- sapply(eir_equil, function(eir){quantile(output_efficacy_leaky$eff_risk_relapse_LM[output_efficacy_leaky$sig_het == 0 & output_efficacy_leaky$eir_equil == eir],
-                                                                           probs = c(0.25, 0.50, 0.75))})
 eff_risk_relapse_LM_all_or_none <- sapply(eir_equil, function(eir){quantile(output_efficacy_all_or_none$eff_risk_relapse_LM[output_efficacy_all_or_none$sig_het == 0 & output_efficacy_all_or_none$eir_equil == eir],
                                                                                  probs = c(0.25, 0.50, 0.75))})
 
-eff_risk_relapse_D_leaky <- sapply(eir_equil, function(eir){quantile(output_efficacy_leaky$eff_risk_relapse_D[output_efficacy_leaky$sig_het == 0 & output_efficacy_leaky$eir_equil == eir],
-                                                                           probs = c(0.25, 0.50, 0.75))})
 eff_risk_relapse_D_all_or_none <- sapply(eir_equil, function(eir){quantile(output_efficacy_all_or_none$eff_risk_relapse_D[output_efficacy_all_or_none$sig_het == 0 & output_efficacy_all_or_none$eir_equil == eir],
                                                                                  probs = c(0.25, 0.50, 0.75))})
 
 # generate plot 
-palette <- pal_material(palette = 'deep-orange', n = 8)(8)[-1][c(1,2,4)]
-offset <- seq(from = -0.45, to = 0.45, length.out = 18)
-cex = 1.15
-rect_width <- c(-0.5, mean(offset[6:7]), mean(offset[12:13]), 0.5)
+palette <- brewer.pal(n = 9, name = 'YlOrRd')
+palette <- palette[c(5,7,9)]
+offset <- seq(from = -0.45, to = 0.45, length.out = 9)
+cex = 1.5
+rect_width <- c(-0.5, mean(offset[3:4]), mean(offset[6:7]), 0.5)
 eff_label <- c('Cox', 'Incidence', 'Risk')
 
 jpeg(filename = '../../output/figs/fig_S1.jpg', width = 8, height = 5, units = 'in', res = 500)
@@ -85,71 +69,44 @@ abline(h = 0.75, lwd = 1, lty = 2, col = '#222222')
 for(ee in 1:length(eir_equil))
 {
   # cph metrics 
-  segments(x0 = ee + offset[1], y0 = eff_cph_recurrent_PCR_all_or_none[1,ee], y1 = eff_cph_recurrent_PCR_all_or_none[3,ee],
+  segments(x0 = ee + offset[1], y0 = eff_cph_relapse_PCR_all_or_none[1,ee], y1 = eff_cph_relapse_PCR_all_or_none[3,ee],
            pch = 1, col = palette[1], lwd = cex)
-  points(ee + offset[1], eff_cph_recurrent_PCR_all_or_none[2,ee], pch = 16, col = palette[1], bg = 'white', cex = cex)
+  points(ee + offset[1], eff_cph_relapse_PCR_all_or_none[2,ee], pch = 16, col = palette[1], cex = cex)
   
-  segments(x0 = ee + offset[2], y0 = eff_cph_recurrent_PCR_leaky[1,ee], y1 = eff_cph_recurrent_PCR_all_or_none[3,ee],
-           pch = 1, col = palette[1], lwd = cex)
-  points(ee + offset[2], eff_cph_recurrent_PCR_leaky[2,ee], pch = 17, col = palette[1], bg = 'white', cex = cex)
-  
-  segments(x0 = ee + offset[3], y0 = eff_cph_recurrent_LM_all_or_none[1,ee], y1 = eff_cph_recurrent_LM_all_or_none[3,ee],
+    
+  segments(x0 = ee + offset[2], y0 = eff_cph_relapse_LM_all_or_none[1,ee], y1 = eff_cph_relapse_LM_all_or_none[3,ee],
            pch = 1, col = palette[2], lwd = cex)
-  points(ee + offset[3], eff_cph_recurrent_LM_all_or_none[2,ee], pch = 16, col = palette[2], bg = 'white', cex = cex)
+  points(ee + offset[2], eff_cph_relapse_LM_all_or_none[2,ee], pch = 16, col = palette[2], cex = cex)
   
-  segments(x0 = ee + offset[4], y0 = eff_cph_recurrent_LM_leaky[1,ee], y1 = eff_cph_recurrent_LM_all_or_none[3,ee],
-           pch = 1, col = palette[2], lwd = cex)
-  points(ee + offset[4], eff_cph_recurrent_LM_leaky[2,ee], pch = 17, col = palette[2], bg = 'white', cex = cex)
+  segments(x0 = ee + offset[3], y0 = eff_cph_relapse_D_all_or_none[1,ee], y1 = eff_cph_relapse_D_all_or_none[3,ee],
+           pch = 1, col = palette[3], lwd = cex)
+  points(ee + offset[3], eff_cph_relapse_D_all_or_none[2,ee], pch = 16, col = palette[3], cex = cex)
   
   # incidence 
-  segments(x0 = ee + offset[7], y0 = eff_incid_relapse_PCR_all_or_none[1,ee], y1 = eff_incid_relapse_PCR_all_or_none[3,ee],
+  segments(x0 = ee + offset[4], y0 = eff_incid_relapse_PCR_all_or_none[1,ee], y1 = eff_incid_relapse_PCR_all_or_none[3,ee],
            pch = 1, col = palette[1], lwd = cex)
-  points(ee + offset[7], eff_incid_relapse_PCR_all_or_none[2,ee], pch = 16, col = palette[1], cex = cex)
+  points(ee + offset[4], eff_incid_relapse_PCR_all_or_none[2,ee], pch = 16, col = palette[1], cex = cex)
   
-  segments(x0 = ee + offset[8], y0 = eff_incid_relapse_PCR_leaky[1,ee], y1 = eff_incid_relapse_PCR_leaky[3,ee],
-           pch = 1, col = palette[1], lwd = cex)
-  points(ee + offset[8], eff_incid_relapse_PCR_leaky[2,ee], pch = 17, col = palette[1], cex = cex)
-  
-  segments(x0 = ee + offset[9], y0 = eff_incid_relapse_LM_all_or_none[1,ee], y1 = eff_incid_relapse_LM_all_or_none[3,ee],
+  segments(x0 = ee + offset[5], y0 = eff_incid_relapse_LM_all_or_none[1,ee], y1 = eff_incid_relapse_LM_all_or_none[3,ee],
            pch = 1, col = palette[2], lwd = cex)
-  points(ee + offset[9], eff_incid_relapse_LM_all_or_none[2,ee], pch = 16, col = palette[2], cex = cex)
+  points(ee + offset[5], eff_incid_relapse_LM_all_or_none[2,ee], pch = 16, col = palette[2], cex = cex)
   
-  segments(x0 = ee + offset[10], y0 = eff_incid_relapse_LM_leaky[1,ee], y1 = eff_incid_relapse_LM_leaky[3,ee],
-           pch = 1, col = palette[2], lwd = cex)
-  points(ee + offset[10], eff_incid_relapse_LM_leaky[2,ee], pch = 17, col = palette[2], cex = cex)
-  
-  segments(x0 = ee + offset[11], y0 = eff_incid_relapse_D_all_or_none[1,ee], y1 = eff_incid_relapse_D_all_or_none[3,ee],
+  segments(x0 = ee + offset[6], y0 = eff_incid_relapse_D_all_or_none[1,ee], y1 = eff_incid_relapse_D_all_or_none[3,ee],
            pch = 1, col = palette[3], lwd = cex)
-  points(ee + offset[11], eff_incid_relapse_D_all_or_none[2,ee], pch = 16, col = palette[3], cex = cex)
-  
-  segments(x0 = ee + offset[12], y0 = eff_incid_relapse_D_leaky[1,ee], y1 = eff_incid_relapse_D_leaky[3,ee],
-           pch = 1, col = palette[3], lwd = cex)
-  points(ee + offset[12], eff_incid_relapse_D_leaky[2,ee], pch = 17, col = palette[3], cex = cex)
+  points(ee + offset[6], eff_incid_relapse_D_all_or_none[2,ee], pch = 16, col = palette[3], cex = cex)
   
   # risk measures 
-  segments(x0 = ee + offset[13], y0 = eff_risk_relapse_PCR_all_or_none[1,ee], y1 = eff_risk_relapse_PCR_all_or_none[3,ee],
+  segments(x0 = ee + offset[7], y0 = eff_risk_relapse_PCR_all_or_none[1,ee], y1 = eff_risk_relapse_PCR_all_or_none[3,ee],
            pch = 1, col = palette[1], lwd = cex)
-  points(ee + offset[13], eff_risk_relapse_PCR_all_or_none[2,ee], pch = 16, col = palette[1], cex = cex)
+  points(ee + offset[7], eff_risk_relapse_PCR_all_or_none[2,ee], pch = 16, col = palette[1], cex = cex)
 
-  segments(x0 = ee + offset[14], y0 = eff_risk_relapse_PCR_leaky[1,ee], y1 = eff_risk_relapse_PCR_leaky[3,ee],
-           pch = 1, col = palette[1], lwd = cex)
-  points(ee + offset[14], eff_risk_relapse_PCR_leaky[2,ee], pch = 17, col = palette[1], cex = cex)
-  
-  segments(x0 = ee + offset[15], y0 = eff_risk_relapse_LM_all_or_none[1,ee], y1 = eff_risk_relapse_LM_all_or_none[3,ee],
+  segments(x0 = ee + offset[8], y0 = eff_risk_relapse_LM_all_or_none[1,ee], y1 = eff_risk_relapse_LM_all_or_none[3,ee],
            pch = 1, col = palette[2], lwd = cex)
-  points(ee + offset[15], eff_risk_relapse_LM_all_or_none[2,ee], pch = 16, col = palette[2], cex = cex)
+  points(ee + offset[8], eff_risk_relapse_LM_all_or_none[2,ee], pch = 16, col = palette[2], cex = cex)
   
-  segments(x0 = ee + offset[16], y0 = eff_risk_relapse_LM_leaky[1,ee], y1 = eff_risk_relapse_LM_leaky[3,ee],
-           pch = 1, col = palette[2], lwd = cex)
-  points(ee + offset[16], eff_risk_relapse_LM_leaky[2,ee], pch = 17, col = palette[2], cex = cex)
-  
-  segments(x0 = ee + offset[17], y0 = eff_risk_relapse_D_all_or_none[1,ee], y1 = eff_risk_relapse_D_all_or_none[3,ee],
+  segments(x0 = ee + offset[9], y0 = eff_risk_relapse_D_all_or_none[1,ee], y1 = eff_risk_relapse_D_all_or_none[3,ee],
            pch = 1, col = palette[3], lwd = cex)
-  points(ee + offset[17], eff_risk_relapse_D_all_or_none[2,ee], pch = 16, col = palette[3], cex = cex)
-  
-  segments(x0 = ee + offset[18], y0 = eff_risk_relapse_D_leaky[1,ee], y1 = eff_risk_relapse_D_leaky[3,ee],
-           pch = 1, col = palette[3], lwd = cex)
-  points(ee + offset[18], eff_risk_relapse_D_leaky[2,ee], pch = 17, col = palette[3], cex = cex)
+  points(ee + offset[9], eff_risk_relapse_D_all_or_none[2,ee], pch = 16, col = palette[3], cex = cex)
   
 }
 box()
@@ -159,18 +116,11 @@ mtext(side = 1, line = 2.3, 'EIR')
 mtext(side = 2, line = 2.3, 'Efficacy')
 
 par(xpd = T)
-legend(x = mean(c(0.5, length(eir_equil)+0.5)) - 0.125, y = 1.05, pch = c(1,2,rep(15, length(palette)),NA),
-       lwd = c(NA, NA, rep(NA, length(palette)),1), col = c('#222222', '#222222', palette, '#222222'),
-       lty = c(NA, NA, rep(NA, length(palette)),2),
-       legend = c('All-or-None', 'Leaky', 'PCR-Detectable', 'LM-Detectable', 'Symptomatic', 'Hypnozoite Clearance Prob'),
-       bty = 'n', pt.cex = 1, ncol = 6, xjust = 0.5, cex = 0.6,
+legend(x = mean(c(0.5, length(eir_equil)+0.5)), y = 1.05, pch = c(rep(15, length(palette)),NA),
+       lwd = c(rep(NA, length(palette)),1), col = c(palette, '#222222'),
+       lty = c(rep(NA, length(palette)),2),
+       legend = c('PCR-Detectable', 'LM-Detectable', 'Clinical', 'Clearance Probability'),
+       bty = 'n', pt.cex = 1, ncol = 4, xjust = 0.5, cex = 0.6,
        text.width = 0.45)
-
-
-#legend('bottomleft', pch = c(1,2,0, 15, 22, 15, 15, 15, NA),
-#       lwd = c(NA, NA, NA, NA, NA, NA, NA, NA, 1), col = c('#222222', '#222222', 'grey', 'grey', '#222222', palette, '#222222'),
-#       lty = c(NA, NA, NA, NA, NA, NA, NA, NA, 2), pt.bg = c(NA, NA, NA, NA, 'grey', NA, NA, NA, NA),
-#       legend = c('All-or-None', 'Leaky', 'Cox', 'Incidence', 'Risk', 'PCR-Detectable', 'LM-Detectable', 'Symptomatic', 'Hypnozoite Clearance Prob'),
-#       bty = 'n', pt.cex = 1.25, cex = 0.675)
 dev.off()
 

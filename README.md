@@ -1,7 +1,7 @@
 # Site-specific biases in phase-III clinical trials underestimate the effect of radical cure against *Plasmodium vivax* hypnozoites
 ## John H. Huber, Cristian Koepfli, Guido España, Narimane Nekkab, Michael T. White, T. Alex Perkins
 
-A brief description of the code and data used to run the analyses of Huber *et al*. (2021) are provided below.
+A brief description of the code and data used to run the analyses of Huber *et al*. (2021) are provided below. A pre-print of our work can be accessed on medRxiv at: https://www.medrxiv.org/content/10.1101/2021.01.28.21250689v2
 
 ## Getting Started
 

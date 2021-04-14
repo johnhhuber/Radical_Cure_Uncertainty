@@ -6,10 +6,10 @@ getenv = True
 universe = vanilla
 
 inDir=data
-dataDir=analysis_1119/radical_cure_therapeutic/all_or_none
+dataDir=analysis_0320/radical_cure_therapeutic/all_or_none
 
 executable      = ./script.sh
-arguments       = $(params) $(mosq_1) $(mosq_2) $(interv) $(trial) $(out_particip) $(out_recurr) $(out_trial) $(PROCESS)
+arguments       = $(params) $(mosq_1) $(mosq_2) $(interv) $(trial) $(out_particip) $(out_recurr) $(out_trial) $(out_model) $(PROCESS)
 
 initialdir      = radical_cure_therapeutic_all_or_none
 should_transfer_files = yes
@@ -29,5 +29,6 @@ trial=trial_design_$(PROCESS).txt
 out_particip=indiv_$(PROCESS).csv
 out_recurr=recurr_$(PROCESS).csv
 out_trial=trial_$(PROCESS).csv
-queue 1600
+out_model=model_$(PROCESS).txt
+queue 1200
 

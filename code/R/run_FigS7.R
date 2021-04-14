@@ -1,9 +1,22 @@
+# set working directory
+setwd('~/Dropbox/Radical_Cure_MOA/code/')
+
+# clear existing workspace
+rm(list = ls())
+
 # specify path to output files 
-path_output_all_or_none <- '../../output/analysis/eir_vs_heterogeneity/output_files/all_or_none/'
+path_output_all_or_none <- '../output/analysis_0320/eir_vs_heterogeneity/output_files/all_or_none/'
+
+# list all of the output files 
+#files_output_all_or_none <- list.files(path = path_output_all_or_none, full.names = T, pattern = 'efficacy')
+
+# load the files 
+#output_all_or_none <- lapply(files_output_all_or_none, function(ff){read.csv(ff)})
+#output <- as.data.frame((do.call('rbind', output_all_or_none)))
 
 # specify parameter ranges
 sigma_het <- seq(from = 0, to = 3, by = 1)
-EIR_equil <- c(0.1, 1, 10, 100)
+EIR_equil <- c(1, 10, 100)
 n_rep <- 200
 
 # construct parameter grid 
@@ -16,6 +29,9 @@ output$param_id <- 1:nrow(output) - 1
 # subset to only look at homogeneous biting scenario 
 output <- subset(output, sigma_het == 0)
 
+# subset to only include homogeneous biting scenario 
+#output <- subset(output, sig_het == 0, select = c('param_id', 'eir_equil'))
+
 # add in the incidence rate of interest 
 output$incidence_relapse_desired <- NA
 output$incidence_relapse_all <- NA
@@ -23,6 +39,9 @@ output$incidence_recurrent <- NA
 output$prop_relapse_desired <- NA
 output$prop_relapse_all <- NA
 output$prop_recurrent <- NA
+
+# specify person years of followup
+#person_year_followup <- 180 / 365
 
 # loop through and calculate the incidence rates 
 for(ii in 1:nrow(output))
@@ -56,4 +75,4 @@ for(ii in 1:nrow(output))
 }
 
 # write output to file 
-write.csv(output, file = paste(path_output_all_or_none, 'sample_size_calculation.csv', sep = ''), row.names = F)
+write.csv(output, file = '../output/analysis_0320/eir_vs_heterogeneity/output_files/all_or_none/sample_size_calculation.csv', row.names = F)

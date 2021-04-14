@@ -16,32 +16,33 @@ output_efficacy_all_or_none <- as.data.frame((do.call('rbind', output_all_or_non
 eir_equil <- sort(unique(output_efficacy_all_or_none$eir_equil))
 
 # get the efficacies 
-eff_cph_recurrent_LM_all_or_none <- sapply(eir_equil, function(eir){quantile(output_efficacy_all_or_none$eff_cph_recurrent_LM[output_efficacy_all_or_none$sig_het == 0 & output_efficacy_all_or_none$eir_equil == eir],
-                                                                           probs = c(0.25, 0.50, 0.75))})
+sigma_het = 0
+eff_cph_recurrent_LM_all_or_none <- sapply(eir_equil, function(eir){quantile(output_efficacy_all_or_none$eff_cph_recurrent_LM[output_efficacy_all_or_none$sig_het == sigma_het & output_efficacy_all_or_none$eir_equil == eir],
+                                                                           probs = c(0.25, 0.50, 0.75), na.rm = T)})
 
-eff_cph_recurrent_PCR_all_or_none <- sapply(eir_equil, function(eir){quantile(output_efficacy_all_or_none$eff_cph_recurrent_PCR[output_efficacy_all_or_none$sig_het == 0 & output_efficacy_all_or_none$eir_equil == eir],
-                                                                            probs = c(0.25, 0.50, 0.75))})
+eff_cph_recurrent_PCR_all_or_none <- sapply(eir_equil, function(eir){quantile(output_efficacy_all_or_none$eff_cph_recurrent_PCR[output_efficacy_all_or_none$sig_het == sigma_het & output_efficacy_all_or_none$eir_equil == eir],
+                                                                            probs = c(0.25, 0.50, 0.75), na.rm = T)})
 
-eff_cph_recurrent_D_all_or_none <- sapply(eir_equil, function(eir){quantile(output_efficacy_all_or_none$eff_cph_recurrent_D[output_efficacy_all_or_none$sig_het == 0 & output_efficacy_all_or_none$eir_equil == eir],
-                                                                              probs = c(0.25, 0.50, 0.75))})
+eff_cph_recurrent_D_all_or_none <- sapply(eir_equil, function(eir){quantile(output_efficacy_all_or_none$eff_cph_recurrent_D[output_efficacy_all_or_none$sig_het == sigma_het & output_efficacy_all_or_none$eir_equil == eir],
+                                                                              probs = c(0.25, 0.50, 0.75), na.rm = T)})
 
-eff_incid_recurrent_PCR_all_or_none <- sapply(eir_equil, function(eir){quantile(output_efficacy_all_or_none$eff_incid_trial_PCR[output_efficacy_all_or_none$sig_het == 0 & output_efficacy_all_or_none$eir_equil == eir],
-                                                                              probs = c(0.25, 0.50, 0.75))})
+eff_incid_recurrent_PCR_all_or_none <- sapply(eir_equil, function(eir){quantile(output_efficacy_all_or_none$eff_incid_trial_PCR[output_efficacy_all_or_none$sig_het == sigma_het & output_efficacy_all_or_none$eir_equil == eir],
+                                                                              probs = c(0.25, 0.50, 0.75), na.rm = T)})
 
-eff_incid_recurrent_LM_all_or_none <- sapply(eir_equil, function(eir){quantile(output_efficacy_all_or_none$eff_incid_trial_LM[output_efficacy_all_or_none$sig_het == 0 & output_efficacy_all_or_none$eir_equil == eir],
-                                                                             probs = c(0.25, 0.50, 0.75))})
+eff_incid_recurrent_LM_all_or_none <- sapply(eir_equil, function(eir){quantile(output_efficacy_all_or_none$eff_incid_trial_LM[output_efficacy_all_or_none$sig_het == sigma_het & output_efficacy_all_or_none$eir_equil == eir],
+                                                                             probs = c(0.25, 0.50, 0.75), na.rm = T)})
 
-eff_incid_recurrent_D_all_or_none <- sapply(eir_equil, function(eir){quantile(output_efficacy_all_or_none$eff_incid_trial_D[output_efficacy_all_or_none$sig_het == 0 & output_efficacy_all_or_none$eir_equil == eir],
-                                                                            probs = c(0.25, 0.50, 0.75))})
+eff_incid_recurrent_D_all_or_none <- sapply(eir_equil, function(eir){quantile(output_efficacy_all_or_none$eff_incid_trial_D[output_efficacy_all_or_none$sig_het == sigma_het & output_efficacy_all_or_none$eir_equil == eir],
+                                                                            probs = c(0.25, 0.50, 0.75), na.rm = T)})
 
-eff_risk_recurrent_PCR_all_or_none <- sapply(eir_equil, function(eir){quantile(output_efficacy_all_or_none$eff_risk_trial_PCR[output_efficacy_all_or_none$sig_het == 0 & output_efficacy_all_or_none$eir_equil == eir],
-                                                                             probs = c(0.25, 0.50, 0.75))})
+eff_risk_recurrent_PCR_all_or_none <- sapply(eir_equil, function(eir){quantile(output_efficacy_all_or_none$eff_risk_trial_PCR[output_efficacy_all_or_none$sig_het == sigma_het & output_efficacy_all_or_none$eir_equil == eir],
+                                                                             probs = c(0.25, 0.50, 0.75), na.rm = T)})
 
-eff_risk_recurrent_LM_all_or_none <- sapply(eir_equil, function(eir){quantile(output_efficacy_all_or_none$eff_risk_trial_LM[output_efficacy_all_or_none$sig_het == 0 & output_efficacy_all_or_none$eir_equil == eir],
-                                                                            probs = c(0.25, 0.50, 0.75))})
+eff_risk_recurrent_LM_all_or_none <- sapply(eir_equil, function(eir){quantile(output_efficacy_all_or_none$eff_risk_trial_LM[output_efficacy_all_or_none$sig_het == sigma_het & output_efficacy_all_or_none$eir_equil == eir],
+                                                                            probs = c(0.25, 0.50, 0.75), na.rm = T)})
 
-eff_risk_recurrent_D_all_or_none <- sapply(eir_equil, function(eir){quantile(output_efficacy_all_or_none$eff_risk_trial_D[output_efficacy_all_or_none$sig_het == 0 & output_efficacy_all_or_none$eir_equil == eir],
-                                                                           probs = c(0.25, 0.50, 0.75))})
+eff_risk_recurrent_D_all_or_none <- sapply(eir_equil, function(eir){quantile(output_efficacy_all_or_none$eff_risk_trial_D[output_efficacy_all_or_none$sig_het == sigma_het & output_efficacy_all_or_none$eir_equil == eir],
+                                                                           probs = c(0.25, 0.50, 0.75), na.rm = T)})
 
 # generate plot 
 palette <- brewer.pal(n = 9, name = 'YlOrRd')

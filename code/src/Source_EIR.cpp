@@ -90,7 +90,7 @@ int main(int argc, char** argv)
 	////////////////////////////////////////////
 
 	// do we have the correct command line?
-	if (argc != 9 + N_mosq)
+	if (argc != 4 + N_mosq)
 	{
 		std::cout << "Incorrect command line.\n";
 		return 0;
@@ -103,16 +103,8 @@ int main(int argc, char** argv)
 	{
 		mosquito_File[v] = argv[2 + v];
 	}
-
-	const char* coverage_File = argv[2 + N_mosq];
-	std::string trial_File = argv[3 + N_mosq];
-	// const char* output_File   = argv[4 + N_mosq];
-	std::string output_File_Participants = argv[4 + N_mosq];
-	std::string output_File_Recurrent = argv[5 + N_mosq];
-	std::string output_File_Trial = argv[6 + N_mosq];
-        const char* output_File_Transmission_Model = argv[7 + N_mosq];
-
-	int seed = std::stoi(argv[8 + N_mosq]) + 1;
+	std::string output_file = argv[2 + N_mosq];
+	int seed = std::stoi(argv[3 + N_mosq]) + 1;
 	setall(seed, seed);
 
 
@@ -136,19 +128,6 @@ int main(int argc, char** argv)
 	SimTimes times = Pv_mod_par.read(parameter_File, mosquito_File);
 	BRAZ_pop.N_pop = Pv_mod_par.N_pop;
 
-	Intervention BRAZ_intven(coverage_File);
-
-	///////////////////////////////////////////////
-	//                                           //
-	// 1.1.5. Read in trial parameters           //
-	//        and create an trial object  			 //
-	//                                           //
-	///////////////////////////////////////////////
-	Trial BRAZ_trial;
-
-	BRAZ_trial.Initialize(trial_File, output_File_Participants, output_File_Recurrent, output_File_Trial);
-
-
 	///////////////////////////////////////////////////////////////////////////
 	//                                                                       //
 	// 1.1.6. Initialise Population of individuals                           //
@@ -171,75 +150,13 @@ int main(int argc, char** argv)
 	// Calculate population equilibrium
 
 	BRAZ_pop.equil_setup_count = 0;
-
 	BRAZ_pop.pop_at_equil(Pv_mod_par);
 
-
 	/////////////////////////////////////
-	// Additional initialisations for PQ or TQ
-	// case management at beginning
-
-	if( (Pv_mod_par.CM_regimen == 1) || (Pv_mod_par.CM_regimen == 2) )
-	{
-		BRAZ_pop.equil_setup_count = 1;
-
-		for (int eq = 0; eq < N_eq_setup; eq++)
-		{
-			BRAZ_pop.pop_at_equil(Pv_mod_par);
-
-			BRAZ_pop.equil_setup_count = BRAZ_pop.equil_setup_count + 1;
-		}
-	}
-
-
-
-	////////////////////////////////////////////
-	// Initialise population of individuals at equilibrium
-
-	BRAZ_pop.ind_at_equil(Pv_mod_par);
-
-
-	cout << "Population of size " << BRAZ_pop.N_pop << " initialised!" << endl;
-	cout << endl;
-
-
-	/////////////////////////////////////////////////////////////////////////
-	//                                                                     //
-	// 1.1.6. Create Simulation object                                     //
-	//                                                                     //
-	/////////////////////////////////////////////////////////////////////////
-
-	Simulation BRAZ_sim(times);
-
-
-	//////////////////////////////////////////////////////
-	//                                                  //
-	// 1.1.7. Begin stochastic simulations              //
-	//                                                  //
-	//////////////////////////////////////////////////////
-
-	cout << "Starting model simulations......." << endl;
-
-	BRAZ_sim.runTrial(Pv_mod_par, BRAZ_pop, BRAZ_intven, BRAZ_trial);
-	// BRAZ_sim.run(Pv_mod_par, BRAZ_pop, BRAZ_intven);
-
-	cout << "Model simulations completed....." << endl;
-	cout << endl;
-
-
-	//////////////////////////////////////////////////////
-	//                                                  //
-	// 1.1.8. Output to file                            //
-	//                                                  //
-	//////////////////////////////////////////////////////
-
-	BRAZ_sim.write_output(output_File_Transmission_Model);
-	BRAZ_trial.writeParticipantData();
-	BRAZ_trial.writeTrialOutcomes();
-	BRAZ_trial.writeAllRecurrentInfs();
-
-
-	cout << "Time taken: " << ((double)clock() - clock_time) / ((double)CLOCKS_PER_SEC) << " seconds" << endl;
+	// Write to file
+	std::ofstream fout;
+	fout.open(output_file);
+	fout << BRAZ_pop.getPvPR(Pv_mod_par);
 
 
 	return 0;

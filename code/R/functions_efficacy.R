@@ -68,7 +68,7 @@ countRecurrentInfsTrial <- function(output_recurrent,
     num_symptomatic <-  sum(grepl('_D', recurrent$Infection_Type) | grepl('_T', recurrent$Infection_Type))
     num_overlap <- 0
     
-    if(any(followup$LM_Infection))
+    if(any(followup$PCR_Infection))
     {
       dates_positive_followup <- followup$Days_Since_Enrollment[followup$PCR_Infection == 1] + enrollment_date
       infection_type_followup <- sapply(dates_positive_followup, function(d){recurrent$Infection_Type[tail(which(recurrent$Infection_Date < d), n = 1)]})
@@ -526,7 +526,7 @@ calcCoxEff <- function(df,
   days_followup <- c(0, days_followup[days_followup >= days_left_censored])
   
   # specify the lower and upper bounds for each interval 
-  df_subset$time_upper_LM <- ifelse(df_subset$censor_recurrent_LM, NA, df_subset$time_recurrent_LM)
+  df_subset$time_upper_LM <- ifelse(df_subset$censor_recurrent_LM, Inf, df_subset$time_recurrent_LM)
   df_subset$time_lower_LM <- sapply(1:nrow(df_subset), function(i){ifelse(df_subset$censor_recurrent_LM[i], df_subset$time_recurrent_LM[i], tail(days_followup[days_followup < df_subset$time_recurrent_LM[i]], n = 1))})
   
   # fit cox proportional hazard
@@ -544,7 +544,7 @@ calcCoxEff <- function(df,
   df_subset$trial_arm_num <- ifelse(df_subset$trial_arm == 'TREATMENT', 2, 1)
   
   # specify the lower and upper bounds for each interval 
-  df_subset$time_upper_PCR <- ifelse(df_subset$censor_recurrent_PCR, NA, df_subset$time_recurrent_PCR)
+  df_subset$time_upper_PCR <- ifelse(df_subset$censor_recurrent_PCR, Inf, df_subset$time_recurrent_PCR)
   df_subset$time_lower_PCR <- sapply(1:nrow(df_subset), function(i){ifelse(df_subset$censor_recurrent_PCR[i], df_subset$time_recurrent_PCR[i], tail(days_followup[days_followup < df_subset$time_recurrent_PCR[i]], n = 1))})
   
   # fit cox proportional hazard
@@ -562,7 +562,7 @@ calcCoxEff <- function(df,
   df_subset$trial_arm_num <- ifelse(df_subset$trial_arm == 'TREATMENT', 2, 1)
   
   # specify the lower and upper bounds for each interval 
-  df_subset$time_upper_D <- ifelse(df_subset$censor_recurrent_D, NA, df_subset$time_recurrent_D)
+  df_subset$time_upper_D <- ifelse(df_subset$censor_recurrent_D, Inf, df_subset$time_recurrent_D)
   df_subset$time_lower_D <- sapply(1:nrow(df_subset), function(i){ifelse(df_subset$censor_recurrent_D[i], df_subset$time_recurrent_D[i], tail(days_followup[days_followup < df_subset$time_recurrent_D[i]], n = 1))})
   
   # fit cox proportional hazard

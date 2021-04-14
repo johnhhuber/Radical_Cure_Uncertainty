@@ -23,7 +23,7 @@ files_output_recurrent <- list.files(path = paste(path_output, 'recurr/', sep = 
 files_output_trial <- list.files(path = paste(path_output, 'trial/', sep = ''), pattern = 'trial', full.names = T)
 
 # create a data frame to store output 
-n_sims <- length(files_input_params)
+n_sims <- length(files_output_participants)
 print(n_sims)
 
 batch_size = round(n_sims / 1000)
@@ -35,27 +35,29 @@ df_final <- foreach(ss = batches[[batch_id]], .combine = rbind, .packages = 'sur
   df <- data.frame(param_id = rep(NA, 1),
                    prop_relapse = rep(NA, 1))
   
-  # read in the parameters file 
-  model_params <- read.table(file = files_input_params[ss])
+  param_id <- as.numeric(head(strsplit(tail(strsplit(files_output_participants[ss], '_')[[1]], n = 1), '[.]')[[1]], n = 1))
   
-  # get the simulation id 
-  param_id <- as.numeric(head(strsplit(tail(strsplit(files_input_params[ss], '_')[[1]], n = 1), '[.]')[[1]], n = 1))
-  
+  # load the parameter files 
+  model_params <- read.table(file = grep(pattern = paste('_', param_id, '.txt', sep = ''), files_input_params, value = T), header = F)
+
   # load the trial design file 
   trial_design <- read.csv(file = grep(pattern = paste('_', param_id, '.txt', sep = ''), files_input_trial, value = T), header = T)
   
   # fill in the parameters 
   df$param_id <- param_id
 
+  # specify files 
+  file_participants <- grep(pattern = paste('_', param_id, '.csv', sep = ''), files_output_participants, value = T)
+  file_recurrent <- grep(pattern = paste('_', param_id, '.csv', sep = ''), files_output_recurrent, value = T)
+
   # load output files
-  output_participants <- read.csv(file = grep(pattern = paste('_', param_id, '.csv', sep = ''), files_output_participants, value = T), header = T)
-  output_recurrent <- read.csv(file = grep(pattern = paste('_', param_id, '.csv', sep = ''), files_output_recurrent, value = T), header = T)
+  if(file.exists(file_participants) & file.exists(file_recurrent))
+  {
+    output_participants <- read.csv(file = file_participants, header = T)
+    output_recurrent <- read.csv(file = file_recurrent, header = T)
 
-  # compute proportion of recurrent infections that are true treatment failures
-  id_placebo <- output_participants$Participant_ID[output_participants$Trial_Arm == 'PLACEBO']
-  output_recurrent_subset <- subset(output_recurrent, Participant_ID %in% id_placebo)
-
-  df$prop_relapse <- sum(grepl('PRE_', output_recurrent_subset$Infection_Type)) / nrow(output_recurrent_subset)
+    df$prop_relapse <- sum(grepl('PRE_', output_recurrent$Infection_Type)) / nrow(output_recurrent)
+  }
 
   # return 
   df

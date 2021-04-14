@@ -1,5 +1,5 @@
 # install necessary functions 
-if(!require(survival)){install.packages('survival'); library(survival)}
+require(icenReg)
 
 # function to reshape the data into format for calculating efficacy at varying genotyping accuracies
 createDataFrame <- function(output_participant, # output for the participant information 
@@ -72,7 +72,7 @@ getTimeFirstGenotyped <- function(output_recurrent,
                                   participant_id,
                                   sensitivity,
                                   specificity,
-                                  days_left_censored = 29,
+                                  days_left_censored = 32,
                                   detection_type = 'LM')
 {
   # subset to not include the period of left censoring
@@ -188,7 +188,9 @@ calcIncidEff <- function(df)
 }
 
 # fucntion to compute the efficacy based on Cox Proportional Hazards model
-calcCoxEff <- function(df)
+calcCoxEff <- function(df,
+					   days_followup,
+					   days_left_censored = 32)
 {
   # get the appropriate columns to calculate efficay for 
   time_cols <- which(grepl('time_', colnames(df)))
@@ -203,11 +205,20 @@ calcCoxEff <- function(df)
     df_subset <- subset(df, df[,time_cols[ee]] >= 0)
     df_subset$censor_recurrent_LM <- 0
     df_subset$censor_recurrent_LM[df_subset[,time_cols[ee]] == (df_subset$days_enrolled + 1)] <- 1
+    df_subset[df$censor_recurrent_LM == 1, time_cols[ee]] = df_subset[df$censor_recurrent_LM == 1, time_cols[ee]] - 1 
     df_subset$status <- (!df_subset$censor_recurrent_LM) * 1 + 1
     df_subset$trial_arm_num <- ifelse(df_subset$trial_arm == 'TREATMENT', 2, 1)
     
+    # get the updated number of days of follow-up in light of left censoring 
+  	days_followup <- c(0, days_followup[days_followup >= days_left_censored])
+
+  	# specify the lower and upper bounds for each interval 
+  	df_subset$time_upper_LM <- sapply(1:nrow(df_subset), function(i){ifelse(df_subset$censor_recurrent_LM[i], Inf, df_subset[i,time_cols[ee]])})
+  	df_subset$time_lower_LM <- sapply(1:nrow(df_subset), function(i){ifelse(df_subset$censor_recurrent_LM[i], df_subset[i,time_cols[ee]], tail(days_followup[days_followup < df_subset[i,time_cols[ee]]], n = 1))})
+
     # fit cox proportional hazard
-    cph <- coxph(formula = Surv(df_subset[,time_cols[ee]], status) ~ trial_arm_num, data = df_subset)
+    #cph <- coxph(formula = Surv(df_subset[,time_cols[ee]], status) ~ trial_arm_num, data = df_subset)
+    cph <- ic_sp(Surv(time = df_subset$time_lower_LM, time2 = df_subset$time_upper_LM, type = 'interval2') ~ trial_arm_num, data = df_subset, model = 'ph')
     eff_cph[ee] <- 1 - exp(as.numeric(cph$coefficients))
   }
   

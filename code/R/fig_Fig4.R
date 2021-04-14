@@ -12,7 +12,7 @@ output_all_or_none <- lapply(files_output_all_or_none, function(ff){read.csv(ff)
 output_efficacy_all_or_none <- as.data.frame((do.call('rbind', output_all_or_none)))
 
 # specify parameter ranges 
-EIR_equil <- c(0.1 / 365, 1 / 365, 10 / 365, 100 / 365)
+EIR_equil <- c(1 / 365, 10 / 365, 100 / 365)
 is_LLIN_distributed <- c(0,1)
 is_IRS_administered <- c(0,1)
 
@@ -41,13 +41,13 @@ output_efficacy_all_default <- subset(output_efficacy_all_or_none, PSI_indoors =
 scenarios_vector_control <- data.frame(is_LLIN_distributed = c(0,1,0,1),
                                        is_IRS_administered = c(0,0,1,1))
 
-eir_equil <- sort(unique(output_efficacy_all_default$eir_equil))
+eir_equil <- sort(unique(output_efficacy_all_or_none$eir_equil))
 
 # calculate efficacy
 eff_all_default <- lapply(1:nrow(scenarios_vector_control), function(vc){sapply(eir_equil, function(eir){quantile(output_efficacy_all_default$eff_cph_recurrent_LM[output_efficacy_all_default$eir_equil == eir & 
                                                                                                                                                                      output_efficacy_all_default$is_LLIN_distributed == scenarios_vector_control$is_LLIN_distributed[vc] & 
                                                                                                                                                                      output_efficacy_all_default$is_IRS_administered == scenarios_vector_control$is_IRS_administered[vc]],
-                                                                                                                  probs = c(0.25, 0.50, 0.75))})})
+                                                                                                                  probs = c(0.25, 0.50, 0.75), na.rm = T)})})
 # generate plots 
 palette <- head(pal_lancet()(9), n = 4)
 offset <- seq(from = -0.4, to = 0.4, length.out = nrow(scenarios_vector_control))

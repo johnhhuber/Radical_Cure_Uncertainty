@@ -8,7 +8,7 @@ path_out = '../../output/analysis/eir_vs_heterogeneity/input_files/'
 
 # specify parameter ranges
 sigma_het <- seq(from = 0, to = 3, by = 1)
-EIR_equil <- c(0.1 / 365, 1 / 365, 10 / 365, 100 / 365)
+EIR_equil <- c(1 / 365, 10 / 365, 100 / 365)
 n_rep <- 200
 
 # construct parameter grid 
@@ -61,20 +61,21 @@ for(ff in 1:nrow(param_sweep))
   
   # model parameters file 
   genModelParamsFile(output_file_path = paste(path_out, 'all_or_none/model_params_', ff - 1, '.txt', sep = ''),
-                     N_part = 100000,
+                     N_part = 200000,
                      EIR_equil = param_sweep[ff, 'EIR_equil'],
                      sig_het = param_sweep[ff, 'sigma_het'],
                      start_time = 2019,
-                     end_time = 2040)
+                     end_time = 2030,
+                     burnin_time = 30)
   
   genModelParamsFile(output_file_path = paste(path_out, 'leaky/model_params_', ff - 1, '.txt', sep = ''),
-                     N_part = 100000,
+                     N_part = 200000,
                      EIR_equil = param_sweep[ff, 'EIR_equil'],
                      sig_het = param_sweep[ff, 'sigma_het'],
                      start_time = 2019,
-                     end_time = 2040)
+                     end_time = 2030,
+                     burnin_time = 30)
 }
-
 
 ##### Analysis 2 - How does the estimated efficacy vary with relapse rate and the duration of follow-up? #####
 
@@ -82,7 +83,7 @@ for(ff in 1:nrow(param_sweep))
 path_out = '../../output/analysis/followup_vs_relapse/input_files/'
 
 # specify parameter ranges 
-EIR_equil <- c(0.1 / 365, 1 / 365, 10 / 365, 100 / 365)
+EIR_equil <- c(1 / 365, 10 / 365, 100 / 365)
 trial_duration <- c(90, 180, 365, 730)
 ff <- c(1/30, 1/60, 1/90, 1/180)
 
@@ -106,7 +107,7 @@ for(ff in 1:nrow(param_sweep))
   print(ff)
   
   # trial design file 
-  genTrialFile(output_file_path = paste(path_out, 'all_or_none/trial_design/trial_design_', ff - 1, '.txt', sep = ''),
+  genTrialFile(output_file_path = paste(path_out, 'all_or_none/trial_design_', ff - 1, '.txt', sep = ''),
                treatment_arm_sample_size = 1000,
                placebo_arm_sample_size = 1000,
                recruitment_start_date = 739125,
@@ -124,7 +125,7 @@ for(ff in 1:nrow(param_sweep))
                G6PD_activity_threshold = 7,
                followup_dates = followup_dates[[which(trial_duration == param_sweep[ff, 'trial_duration'])]])
   
-  genTrialFile(output_file_path = paste(path_out, 'leaky/trial_design/trial_design_', ff - 1, '.txt', sep = ''),
+  genTrialFile(output_file_path = paste(path_out, 'leaky/trial_design_', ff - 1, '.txt', sep = ''),
                treatment_arm_sample_size = 1000,
                placebo_arm_sample_size = 1000,
                recruitment_start_date = 739125,
@@ -143,21 +144,23 @@ for(ff in 1:nrow(param_sweep))
                followup_dates = followup_dates[[which(trial_duration == param_sweep[ff, 'trial_duration'])]])
   
   # model parmaeters file 
-  genModelParamsFile(output_file_path = paste(path_out, 'all_or_none/model_params/model_params_', ff - 1, '.txt', sep = ''),
-                     N_part = 100000,
+  genModelParamsFile(output_file_path = paste(path_out, 'all_or_none/model_params_', ff - 1, '.txt', sep = ''),
+                     N_part = 200000,
                      EIR_equil = param_sweep[ff, 'EIR_equil'],
                      sig_het = 0,
                      ff = param_sweep[ff, 'ff'],
                      start_time = 2019,
-                     end_time = 2040)
+                     end_time = 2030,
+                     burnin_time = 30)
   
-  genModelParamsFile(output_file_path = paste(path_out, 'leaky/model_params/model_params_', ff - 1, '.txt', sep = ''),
-                     N_part = 100000,
+  genModelParamsFile(output_file_path = paste(path_out, 'leaky/model_params_', ff - 1, '.txt', sep = ''),
+                     N_part = 200000,
                      EIR_equil = param_sweep[ff,'EIR_equil'],
                      sig_het = 0,
                      ff = param_sweep[ff, 'ff'],
                      start_time = 2019,
-                     end_time = 2040)
+                     end_time = 2030,
+                     burnin_time = 30)
 }
 
 ##### Analysis 3 - How does vector control help to correct biases? ##### 
@@ -166,7 +169,7 @@ for(ff in 1:nrow(param_sweep))
 path_out = '../../output/analysis/vector_control/input_files/'
 
 # specify parameter ranges 
-EIR_equil <- c(0.1 / 365, 1 / 365, 10 / 365, 100 / 365)
+EIR_equil <- c(1 / 365, 10 / 365, 100 / 365)
 is_LLIN_distributed <- c(0,1)
 is_IRS_administered <- c(0,1)
 
@@ -189,7 +192,7 @@ for(ff in 1:nrow(param_sweep))
   print(ff)
   
   # trial design file 
-  genTrialFile(output_file_path = paste(path_out, 'all_or_none/trial_design/trial_design_', ff - 1, '.txt', sep = ''),
+  genTrialFile(output_file_path = paste(path_out, 'all_or_none/trial_design_', ff - 1, '.txt', sep = ''),
                treatment_arm_sample_size = 1000,
                placebo_arm_sample_size = 1000,
                recruitment_start_date = 739125,
@@ -208,7 +211,7 @@ for(ff in 1:nrow(param_sweep))
                followup_dates = c(0,1,2,3,8,15,22,29,60,120,180))
   
   
-  genTrialFile(output_file_path = paste(path_out, 'leaky/trial_design/trial_design_', ff - 1, '.txt', sep = ''),
+  genTrialFile(output_file_path = paste(path_out, 'leaky/trial_design_', ff - 1, '.txt', sep = ''),
                treatment_arm_sample_size = 1000,
                placebo_arm_sample_size = 1000,
                recruitment_start_date = 739125,
@@ -227,26 +230,28 @@ for(ff in 1:nrow(param_sweep))
                followup_dates = c(0,1,2,3,8,15,22,29,60,120,180))
   
   # model parameters file
-  genModelParamsFile(output_file_path = paste(path_out, 'all_or_none/model_params/model_params_', ff - 1, '.txt', sep = ''),
-                     N_part = 100000,
+  genModelParamsFile(output_file_path = paste(path_out, 'all_or_none/model_params_', ff - 1, '.txt', sep = ''),
+                     N_part = 200000,
                      EIR_equil = param_sweep[ff, 'EIR_equil'],
                      sig_het = 0,
                      start_time = 2019,
-                     end_time = 2040)
+                     end_time = 2030,
+                     burnin_time = 30)
   
-  genModelParamsFile(output_file_path = paste(path_out, 'leaky/model_params/model_params_', ff - 1, '.txt', sep = ''),
-                     N_part = 100000,
+  genModelParamsFile(output_file_path = paste(path_out, 'leaky/model_params_', ff - 1, '.txt', sep = ''),
+                     N_part = 200000,
                      EIR_equil = param_sweep[ff, 'EIR_equil'],
                      sig_het = 0,
                      start_time = 2019,
-                     end_time = 2040)
+                     end_time = 2030,
+                     burnin_time = 30)
   
   # mosquito file 
-  genMosqFile(output_file_path = paste(path_out, 'all_or_none/mosquito/mosquito_', ff - 1, '.txt', sep = ''),
+  genMosqFile(output_file_path = paste(path_out, 'all_or_none/mosquito_', ff - 1, '.txt', sep = ''),
               PSI_indoors = param_sweep[ff,'PSI_indoors'],
               PSI_bed = param_sweep[ff, 'PSI_bed'])
   
-  genMosqFile(output_file_path = paste(path_out, 'leaky/mosquito/mosquito_', ff - 1, '.txt', sep = ''),
+  genMosqFile(output_file_path = paste(path_out, 'leaky/mosquito_', ff - 1, '.txt', sep = ''),
               PSI_indoors = param_sweep[ff,'PSI_indoors'],
               PSI_bed = param_sweep[ff, 'PSI_bed'])
 }
@@ -257,7 +262,7 @@ for(ff in 1:nrow(param_sweep))
 path_out = '../../output/analysis/radical_cure_therapeutic/input_files/'
 
 # specify parameter ranges 
-EIR_equil <- c(0.1 / 365, 1 / 365, 10 / 365, 100 / 365)
+EIR_equil <- c(1 / 365, 10 / 365, 100 / 365)
 trial_PQ_proph <- c(28, 45)
 
 # construct parameter grid 
@@ -310,17 +315,19 @@ for(ff in 1:nrow(param_sweep))
   
   # model parameters file 
   genModelParamsFile(output_file_path = paste(path_out, 'all_or_none/model_params_', ff - 1, '.txt', sep = ''),
-                     N_part = 100000,
+                     N_part = 200000,
                      EIR_equil = param_sweep[ff, 'EIR_equil'],
                      sig_het = 0,
                      start_time = 2019,
-                     end_time = 2040)
+                     end_time = 2030,
+                     burnin_time = 30)
   
   genModelParamsFile(output_file_path = paste(path_out, 'leaky/model_params_', ff - 1, '.txt', sep = ''),
-                     N_part = 100000,
+                     N_part = 200000,
                      EIR_equil = param_sweep[ff, 'EIR_equil'],
                      sig_het = 0,
                      start_time = 2019,
-                     end_time = 2040)
+                     end_time = 2030,
+                     burnin_time = 30)
 }
 

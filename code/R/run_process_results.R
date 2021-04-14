@@ -13,7 +13,8 @@ path_output = args[3]
 batch_id = args[4]
 
 #setup parallel backend to use many processors
-cores=detectCores()
+#cores=detectCores()
+cores = 32
 cl <- makeCluster(cores[1]-1) #not to overload your computer
 registerDoParallel(cl)
 
@@ -101,9 +102,18 @@ df_final <- foreach(ss = batches[[batch_id]], .combine = rbind, .packages = c('s
   df$is_IRS_administered <- trial_design[trial_design[,1] == 'is_IRS_administered', 2]
   
   # load output files
-  output_participants <- read.csv(file = grep(pattern = paste('_', param_id, '.csv', sep = ''), files_output_participants, value = T), header = T)
-  output_recurrent <- read.csv(file = grep(pattern = paste('_', param_id, '.csv', sep = ''), files_output_recurrent, value = T), header = T)
-  output_trial <- read.csv(file = grep(pattern = paste('_', param_id, '.csv', sep = ''), files_output_trial, value = T), header = T)
+  file_participants <- paste(path_output, '/indiv/indiv_', param_id, '.csv.bz2', sep = '')
+  file_recurrent <- paste(path_output, '/recurr/recurr_', param_id, '.csv.bz2', sep = '')
+  file_trial <- paste(path_output, '/trial/trial_', param_id, '.csv.bz2', sep = '')
+  #file_participants <- grep(pattern = paste('_', param_id, '.csv', sep = ''), files_output_participants, value = T)
+  #file_recurrent <- grep(pattern = paste('_', param_id, '.csv', sep = ''), files_output_recurrent, value = T)
+  #file_trial <- grep(pattern = paste('_', param_id, '.csv', sep = ''), files_output_trial, value = T)
+
+  if(file.exists(file_participants) & file.exists(file_recurrent) & file.exists(file_trial))
+  {
+      output_participants <- read.csv(file = file_participants, header = T)
+  output_recurrent <- read.csv(file = file_recurrent, header = T)
+  output_trial <- read.csv(file = file_trial, header = T)
   
   # organize the trial data 
   trial_data <- createEffDataFrame(output_participant = output_participants,
@@ -154,6 +164,7 @@ df_final <- foreach(ss = batches[[batch_id]], .combine = rbind, .packages = c('s
   df$eff_risk_trial_PCR <- eff_risk['risk_trial_PCR']
   df$eff_risk_trial_LM <- eff_risk['risk_trial_LM']
   df$eff_risk_trial_D <- eff_risk['risk_trial_D']
+  }
   
   # return 
   df

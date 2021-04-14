@@ -17,7 +17,7 @@ trial_PQ_proph <- sort(unique(output_efficacy_all_or_none$trial_PQ_proph))
 
 # get the efficacies 
 eff_all_or_none <- lapply(eir_equil, function(eir){sapply(trial_PQ_proph, function(proph){quantile(output_efficacy_all_or_none$eff_cph_recurrent_LM[output_efficacy_all_or_none$trial_PQ_proph == proph & output_efficacy_all_or_none$eir_equil == eir],
-                                                                                          probs = c(0.25, 0.50, 0.75))})})
+                                                                                          probs = c(0.25, 0.50, 0.75), na.rm = T)})})
 
 # generate plot 
 palette <- c('#9A31CD', '#79CDCD')

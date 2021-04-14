@@ -1,8 +1,8 @@
 #!/bin/tcsh
 #$ -q long
 #$ -N eir
-#$ -pe smp 8
-#$ -t 1-500
+#$ -pe smp 32
+#$ -t 1-50
 
 setenv R_LIBS /afs/crc.nd.edu/user/j/jhuber3/myRlibs
 

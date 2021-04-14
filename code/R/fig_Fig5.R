@@ -59,8 +59,8 @@ for(ee in 1:length(eir_equil))
     {
       mean_offset <- 0.5 * (offset[1 + 8 * (sp-1) + 2 * (se-1)] + offset[2 + 8 * (sp-1) + 2 * (se-1)])
       segments(x0 = ee + mean_offset, y0 = eff_all_or_none[[ee]][1, paste(genotyping_method, 'SENS_', sens[se] * 100, '_SPEC_', spec[sp] * 100, sep = '')],
-               y1 = eff_all_or_none[[ee]][3, paste(genotyping_method, 'SENS_', sens[se] * 100, '_SPEC_', spec[sp] * 100, sep = '')], col = palette[se], lwd = 1.25)
-      points(ee + mean_offset, eff_all_or_none[[ee]][2, paste(genotyping_method, 'SENS_', sens[se] * 100, '_SPEC_', spec[sp] * 100, sep = '')], pch = 16, cex = 1.25, col = palette[se])
+               y1 = eff_all_or_none[[ee]][3, paste(genotyping_method, 'SENS_', sens[se] * 100, '_SPEC_', spec[sp] * 100, sep = '')], col = palette[se], lwd = 1.5)
+      points(ee + mean_offset, eff_all_or_none[[ee]][2, paste(genotyping_method, 'SENS_', sens[se] * 100, '_SPEC_', spec[sp] * 100, sep = '')], pch = 16, cex = 1.5, col = palette[se])
     }
   }
 }
@@ -82,7 +82,7 @@ par(xpd = F)
 par(xpd = T)
 legend(x = 0.5, y = -0.15, pch = 15,
       col = palette, legend = c('25', '50', '75', '100'),
-      bty = 'n', pt.cex = 1.25, cex = 0.9, ncol = length(palette), xjust = 0,
+      bty = 'n', pt.cex = 1.5, cex = 0.9, ncol = length(palette), xjust = 0,
       title = 'Sensitivity (%): ', title.adj = 0.5)
 par(xpd = F)
 

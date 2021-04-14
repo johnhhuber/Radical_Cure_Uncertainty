@@ -20,7 +20,7 @@ trial_duration <- sort(unique(output_efficacy_all_or_none$trial_duration))
 
 # get the efficacies for the leaky and all or none campaigns 
 eff_all_or_none <- lapply(eir_equil, function(eir){lapply(trial_duration, function(dur){sapply(ff, function(rel){quantile(output_efficacy_all_or_none$eff_cph_recurrent_LM[output_efficacy_all_or_none$eir_equil == eir & output_efficacy_all_or_none$trial_duration == dur &
-                                                                                                                                                                 abs(output_efficacy_all_or_none$ff - rel) < 1e-6], probs = c(0.25, 0.50, 0.75))})})})
+                                                                                                                                                                 abs(output_efficacy_all_or_none$ff - rel) < 1e-6], probs = c(0.25, 0.50, 0.75), na.rm = T)})})})
 
 # specify mosquito-to-human transmission prob
 mosquito_to_human_transmission_prob = 0.5
@@ -58,8 +58,8 @@ for(ee in 1:length(eir_equil))
     {
       mean_offset <- 0.5 * (offset[1 + 8 * (dd-1) + 2 * (rr-1)] + offset[2 + 8 * (dd-1) + 2 * (rr-1)])
       segments(x0 = ee + mean_offset, y0 = eff_all_or_none[[ee]][[dd]][1,rr],
-               y1 = eff_all_or_none[[ee]][[dd]][3,rr], col = palette[rr], lwd = 1.25)
-      points(ee + mean_offset, eff_all_or_none[[ee]][[dd]][2,rr], pch = 16, cex = 1.25, col = palette[rr])
+               y1 = eff_all_or_none[[ee]][[dd]][3,rr], col = palette[rr], lwd = 1.5)
+      points(ee + mean_offset, eff_all_or_none[[ee]][[dd]][2,rr], pch = 16, cex = 1.5, col = palette[rr])
     }
   }
 }
@@ -108,7 +108,7 @@ plot(NA, NA, xlim = c(0, max(trial_duration)), ylim = c(0,1.0),
 for(ii in 1:length(eir_equil))
 {  
   hazard <- rep(eir_equil[ii] / 365, max(trial_duration)) * mosquito_to_human_transmission_prob
-  lines(1:max(trial_duration), 1 - exp(-cumsum(hazard)), col = palette[ii], lwd = 2)
+  lines(1:max(trial_duration), 1 - exp(-cumsum(hazard)), col = '#222222', lwd = 2, lty = ii)
 }
 box()
 axis(side = 1, at = c(0,trial_duration), labels = c(0,trial_duration))
@@ -118,7 +118,7 @@ mtext(side = 2, line = 2.3, 'Reinfected (%)', cex = 1)
 mtext(side = 3, line = 0, at = 0, 'C', font = 2, adj = 0, cex = 1)
 
 par(xpd = T)
-legend(x = 0.5 * max(trial_duration), y = 1.17, lwd = 2, col = palette, legend = eir_equil, bty = 'n', ncol = length(palette), xjust = 0.5, cex = 1)
+legend(x = 0.5 * max(trial_duration), y = 1.17, lwd = 2, lty = 1:length(eir_equil), col = '#222222', legend = eir_equil, bty = 'n', ncol = length(palette), xjust = 0.5, cex = 1)
 par(xpd = F)
 mtext(side = 3, line = 1.2, 'EIR', cex = 0.9)
 

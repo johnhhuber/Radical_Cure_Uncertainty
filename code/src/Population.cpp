@@ -81,9 +81,9 @@ void Population::human_step(Params& theta)
 	for (size_t n = 0; n < people.size(); n++)
 	{
 		/////////////////////////////////////////////
-		// Everyone has an equal probability of dying
+		// Everyone has an equal probability of dying. We assume that those who are enrolled in the trial do not die. 
 
-		if (theta.P_dead > genunf(0, 1))
+		if ((people[n].participant_ID < 0) && (theta.P_dead > genunf(0, 1)))
 		{
 			people.erase(people.begin() + n);
 
@@ -96,9 +96,9 @@ void Population::human_step(Params& theta)
 		else {
 
 			///////////////////////////////////////////
-			// People die once they reach the maximum age
+			// People die once they reach the maximum age. We assume that those who are enrolled in the trial do not die. 
 
-			if (people[n].age > theta.age_max)
+			if ((people[n].participant_ID < 0) && (people[n].age > theta.age_max))
 			{
 				people.erase(people.begin() + n);
 

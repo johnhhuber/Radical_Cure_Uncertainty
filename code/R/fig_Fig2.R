@@ -18,13 +18,13 @@ sig_het <- sort(unique(output_efficacy_all_or_none$sig_het))
 
 # get the efficacies 
 eff_all_or_none <- lapply(eir_equil, function(eir){sapply(sig_het, function(sig){quantile(output_efficacy_all_or_none$eff_cph_recurrent_LM[output_efficacy_all_or_none$sig_het == sig & output_efficacy_all_or_none$eir_equil == eir],
-                                                                                          probs = c(0.25, 0.50, 0.75))})})
+                                                                                          probs = c(0.25, 0.50, 0.75), na.rm = T)})})
 
 # get the biting propensities to show the distribution
-indiv_0 <- read.csv('../../output/analysis/eir_vs_heterogeneity/output_files/all_or_none/indiv/indiv_0.csv.bz2')
-indiv_1 <- read.csv('../../output/analysis/eir_vs_heterogeneity/output_files/all_or_none/indiv/indiv_200.csv.bz2')
-indiv_2 <- read.csv('../../output/analysis/eir_vs_heterogeneity/output_files/all_or_none/indiv/indiv_400.csv.bz2')
-indiv_3 <- read.csv('../../output/analysis/eir_vs_heterogeneity/output_files/all_or_none/indiv/indiv_600.csv.bz2')
+indiv_0 <- read.csv('../../output/analysis/eir_vs_heterogeneity/output_files/all_or_none/indiv/indiv_1600.csv.bz2')
+indiv_1 <- read.csv('../../output/analysis/eir_vs_heterogeneity/output_files/all_or_none/indiv/indiv_1800.csv.bz2')
+indiv_2 <- read.csv('../../output/analysis/eir_vs_heterogeneity/output_files/all_or_none/indiv/indiv_2000.csv.bz2')
+indiv_3<- read.csv('../../output/analysis/eir_vs_heterogeneity/output_files/all_or_none/indiv/indiv_2200.csv.bz2')
 
 # generate plot 
 palette <- brewer.pal(n = 9, name = 'YlOrRd')
